@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\PartyController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\SchoolController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -90,6 +91,12 @@ Route::middleware('log.api')->group(function () {
         Route::prefix('ai')->group(function () {
             Route::post('/chat',    [AiController::class, 'chat']);
             Route::get('/history',  [AiController::class, 'history']);
+        });
+
+        // Schools
+        Route::prefix('schools')->group(function () {
+            Route::get('/',          [SchoolController::class, 'index']);
+            Route::get('/{id}',      [SchoolController::class, 'show']);
         });
 
         Route::post('/location/resolve', [ReportController::class, 'location']);

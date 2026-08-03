@@ -29,6 +29,10 @@
             <i class="ph ph-briefcase"></i>
             <span class="admin-nav-text">Tài liệu dịch vụ công</span>
         </a>
+        <a href="{{ route('schools.index') }}" class="admin-nav-item {{ Route::is('schools.*')?'admin-active':'' }}">
+            <i class="ph ph-graduation-cap"></i>
+            <span class="admin-nav-text">Cơ sở giáo dục</span>
+        </a>
     </div>
 
     <div class="admin-nav-group">

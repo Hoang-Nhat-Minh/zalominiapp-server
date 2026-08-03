@@ -9,6 +9,7 @@ use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\DocumentController;
 use App\Http\Controllers\Web\CitizenController;
 use App\Http\Controllers\Web\DigitalmapController;
+use App\Http\Controllers\Web\SchoolController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -44,4 +45,5 @@ Route::middleware('auth:officer')->group(function () {
     Route::get('/documents',   [DocumentController::class,   'index'])->name('documents');
     Route::get('/citizens',    [CitizenController::class,    'index'])->name('citizens');
     Route::get('/digitalmaps', [DigitalmapController::class, 'index'])->name('digitalmaps');
+    Route::resource('schools', SchoolController::class);
 });
