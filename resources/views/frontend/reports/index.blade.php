@@ -1,6 +1,6 @@
 @extends('layouts.main')
 
-@section('title', 'Tiếp nhận phản ánh công dân')
+@section('title', 'Tiếp nhận phản ánh công dân (PAHT)')
 
 @push('styles')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
@@ -10,10 +10,12 @@
     <main class="admin-content-wrapper reports-wrapper">
         <div class="reports-header">
             <div class="reports-header-info">
-                <h1 class="reports-title">Tiếp nhận phản ánh công dân</h1>
-                <p class="reports-subtitle">Quản lý xử lý phản ánh, kiến nghị từ người dân gửi lên hệ thống.</p>
+                <h1 class="reports-title">Tiếp nhận & Phân công tự động PAHT</h1>
+                <p class="reports-subtitle">Hệ thống tiếp nhận phản ánh hiện trường, tự động phân công về các bộ phận chuyên trách địa bàn.</p>
             </div>
-            <button class="reports-btn reports-btn-primary"><i class="ph ph-file-pdf"></i> Xuất báo cáo</button>
+            <a href="{{ route('reports.export') }}" class="reports-btn reports-btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                <i class="ph ph-file-csv"></i> Xuất Báo Cáo PAHT (CSV)
+            </a>
         </div>
 
         <div class="reports-stats-grid">
@@ -54,30 +56,28 @@
             </div>
         </div>
 
-        <div class="reports-filter-bar">
+        <form method="GET" action="{{ route('reports') }}" class="reports-filter-bar">
             <div class="reports-filter-group">
                 <div class="reports-search">
                     <i class="ph ph-magnifying-glass"></i>
-                    <input type="text" placeholder="Tìm kiếm theo tiêu đề...">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Tìm theo tiêu đề, địa chỉ...">
                 </div>
-                <select class="reports-select">
-                    <option value="">Tất cả danh mục</option>
-                    <option value="environment">Môi trường</option>
-                    <option value="urban_order">Trật tự đô thị</option>
-                    <option value="traffic">Giao thông</option>
-                    <option value="infrastructure">Hạ tầng</option>
+                <select name="category" class="reports-select" onchange="this.form.submit()">
+                    <option value="">-- Tất cả danh mục --</option>
+                    @foreach($categories as $key => $name)
+                        <option value="{{ $key }}" {{ request('category') === $key ? 'selected' : '' }}>{{ $name }}</option>
+                    @endforeach
                 </select>
-                <select class="reports-select">
-                    <option value="">Tất cả trạng thái</option>
-                    <option value="pending">Chờ tiếp nhận</option>
-                    <option value="processing">Đang xử lý</option>
-                    <option value="resolved">Đã xử lý</option>
-                    <option value="rejected">Từ chối</option>
+                <select name="status" class="reports-select" onchange="this.form.submit()">
+                    <option value="">-- Tất cả trạng thái --</option>
+                    <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Chờ tiếp nhận</option>
+                    <option value="processing" {{ request('status') === 'processing' ? 'selected' : '' }}>Đang xử lý</option>
+                    <option value="resolved" {{ request('status') === 'resolved' ? 'selected' : '' }}>Đã xử lý</option>
+                    <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Từ chối</option>
                 </select>
-                <input type="date" class="reports-select" title="Lọc theo ngày gửi">
             </div>
-            <button class="reports-btn reports-btn-outline"><i class="ph ph-funnel"></i> Lọc kết quả</button>
-        </div>
+            <button type="submit" class="reports-btn reports-btn-outline"><i class="ph ph-funnel"></i> Lọc kết quả</button>
+        </form>
 
         <div class="reports-table-wrapper">
             <table class="reports-table">
@@ -85,44 +85,48 @@
                 <tr>
                     <th width="5%">STT</th>
                     <th width="15%">Người gửi</th>
-                    <th width="15%">Danh mục</th>
-                    <th width="25%">Tiêu đề / Địa điểm</th>
-                    <th width="15%">Thời gian gửi</th>
-                    <th width="15%">Trạng thái</th>
+                    <th width="12%">Danh mục</th>
+                    <th width="18%">Bộ phận phân công (Auto)</th>
+                    <th width="20%">Tiêu đề / Địa điểm</th>
+                    <th width="10%">Ngày gửi</th>
+                    <th width="10%">Trạng thái</th>
                     <th width="10%" class="reports-text-center">Thao tác</th>
                 </tr>
                 </thead>
                 <tbody>
                 @forelse ($reports as $index => $report)
                     @php
-                        $statusConfig=$statusConfigs[$report->status]??[
-                            'class'=>'',
-                            'label'=>'Không xác định'
+                        $statusConfig = $statusConfigs[$report->status] ?? [
+                            'class' => '',
+                            'label' => 'Không xác định'
                         ];
 
                         $images = $report->images;
-
                         if (is_string($images)) {
                             $images = json_decode($images, true);
                         }
-
                         $images = is_array($images) ? $images : [];
                     @endphp
                     <tr>
-                        <td class="reports-text-center">{{ $index + 1 }}</td>
+                        <td class="reports-text-center">{{ $loop->iteration + ($reports->currentPage() - 1) * $reports->perPage() }}</td>
                         <td>
                             <div class="reports-user-info">
-                                <span class="reports-fw-600">{{ $report->user->full_name }}</span>
-                                <span class="reports-text-muted reports-text-small"><i class="ph ph-phone"></i> {{ $report->user->phone }}</span>
+                                <span class="reports-fw-600">{{ $report->user->full_name ?? 'Công dân' }}</span>
+                                <span class="reports-text-muted reports-text-small"><i class="ph ph-phone"></i> {{ $report->user->phone ?? 'N/A' }}</span>
                             </div>
                         </td>
                         <td>
-                            <span class="reports-category-tag">{{ $categories[$report->category] ?? 'Khác' }}</span>
+                            <span class="reports-category-tag">{{ $report->category_label }}</span>
+                        </td>
+                        <td>
+                            <span style="color: #0F766E; font-weight: 600; font-size: 13px;">
+                                <i class="ph ph-arrows-merge"></i> {{ $report->assigned_department_label }}
+                            </span>
                         </td>
                         <td>
                             <div class="reports-title-truncate" title="{{ $report->title }}">{{ $report->title }}</div>
                             <div class="reports-address-truncate reports-text-muted reports-text-small" title="{{ $report->address }}">
-                                <i class="ph ph-map-pin"></i> {{ $report->address }}
+                                <i class="ph ph-map-pin"></i> {{ $report->address ?: 'Tại vị trí GPS' }}
                             </div>
                         </td>
                         <td>{{ date('d/m/Y H:i', strtotime($report->created_at)) }}</td>
@@ -130,19 +134,9 @@
                             <span class="reports-badge {{ $statusConfig['class'] }}">{{ $statusConfig['label'] }}</span>
                         </td>
                         <td class="reports-text-center">
-                            <div class="reports-actions">
-                                @if($report->status === 'pending')
-                                    <button class="reports-btn-icon reports-color-info" title="Tiếp nhận xử lý" onclick="toggleReportModal('modal-report-{{ $report->id }}')"><i class="ph ph-download-simple"></i></button>
-                                    <button class="reports-btn-icon reports-color-danger" title="Từ chối" onclick="toggleReportModal('modal-report-{{ $report->id }}')"><i class="ph ph-x-circle"></i></button>
-                                @elseif($report->status === 'processing')
-                                    <button class="reports-btn-icon reports-color-success" title="Đánh dấu hoàn thành" onclick="toggleReportModal('modal-report-{{ $report->id }}')"><i class="ph ph-check-circle"></i></button>
-                                    <button class="reports-btn-icon reports-color-primary" title="Thêm ghi chú" onclick="toggleReportModal('modal-report-{{ $report->id }}')"><i class="ph ph-note-pencil"></i></button>
-                                @elseif($report->status === 'resolved')
-                                    <button class="reports-btn-icon reports-color-primary" title="Xem chi tiết" onclick="toggleReportModal('modal-report-{{ $report->id }}')"><i class="ph ph-eye"></i></button>
-                                @elseif($report->status === 'rejected')
-                                    <button class="reports-btn-icon reports-color-danger" title="Xem lý do từ chối" onclick="toggleReportModal('modal-report-{{ $report->id }}')"><i class="ph ph-eye"></i></button>
-                                @endif
-                            </div>
+                            <button class="reports-btn-icon reports-color-primary" title="Xem chi tiết & Xử lý" onclick="toggleReportModal('modal-report-{{ $report->id }}')">
+                                <i class="ph ph-note-pencil"></i>
+                            </button>
                         </td>
                     </tr>
 
@@ -150,93 +144,95 @@
                         <div class="reports-modal-overlay" onclick="toggleReportModal('modal-report-{{ $report->id }}')"></div>
                         <div class="reports-modal-content">
                             <div class="reports-modal-header">
-                                <h3 class="reports-modal-title">Chi tiết phản ánh #{{ $report->id }}</h3>
+                                <h3 class="reports-modal-title">Xử lý Phản ánh #{{ $report->id }}</h3>
                                 <button class="reports-modal-close" onclick="toggleReportModal('modal-report-{{ $report->id }}')"><i class="ph ph-x"></i></button>
                             </div>
 
-                            <div class="reports-modal-body">
-                                <div class="reports-modal-layout">
-                                    <div class="reports-modal-info">
-                                        <div class="reports-info-group reports-full-width">
-                                            <label>Tiêu đề phản ánh</label>
-                                            <div class="reports-info-value reports-fw-600 reports-text-lg">{{ $report->title }}</div>
-                                        </div>
-
-                                        <div class="reports-info-grid">
-                                            <div class="reports-info-group">
-                                                <label>Người gửi</label>
-                                                <div class="reports-info-value"><i class="ph ph-user"></i> {{ $report->user->full_name }} - {{ $report->user->phone }}</div>
-                                            </div>
-                                            <div class="reports-info-group">
-                                                <label>Danh mục</label>
-                                                <div class="reports-info-value">{{ $categories[$report->category] ?? 'Khác' }}</div>
-                                            </div>
-                                            <div class="reports-info-group">
-                                                <label>Trạng thái</label>
-                                                <div class="reports-info-value"><span class="reports-badge {{ $statusConfig['class'] }}">{{ $statusConfig['label'] }}</span></div>
-                                            </div>
-                                            <div class="reports-info-group">
-                                                <label>Thời gian gửi</label>
-                                                <div class="reports-info-value"><i class="ph ph-clock"></i> {{ date('d/m/Y H:i', strtotime($report->created_at)) }}</div>
-                                            </div>
-                                        </div>
-
-                                        <div class="reports-info-group reports-full-width">
-                                            <label>Địa điểm</label>
-                                            <div class="reports-info-value"><i class="ph ph-map-pin"></i> {{ $report->address }}</div>
-                                        </div>
-
-                                        <div class="reports-info-group reports-full-width">
-                                            <label>Nội dung mô tả</label>
-                                            <div class="reports-info-box">
-                                                {{ $report->description }}
-                                            </div>
-                                        </div>
-                                        @if(count($images) > 0)
+                            <form method="POST" action="{{ route('reports.updateStatus', $report->id) }}">
+                                @csrf
+                                @method('PUT')
+                                <div class="reports-modal-body">
+                                    <div class="reports-modal-layout">
+                                        <div class="reports-modal-info">
                                             <div class="reports-info-group reports-full-width">
-                                                <label>Hình ảnh đính kèm</label>
-                                                <div class="reports-image-grid">
-                                                    @foreach($images as $img)
-                                                        <div class="reports-img-preview"
-                                                             data-fancybox="gallery-{{ $report->id }}"
-                                                             data-src="{{ asset('storage/' . $img) }}"
-                                                             style="cursor: zoom-in;">
-                                                            <img src="{{ asset('storage/' . $img) }}" alt="Hình ảnh đính kèm">
-                                                        </div>
-                                                    @endforeach
+                                                <label>Tiêu đề phản ánh</label>
+                                                <div class="reports-info-value reports-fw-600 reports-text-lg">{{ $report->title }}</div>
+                                            </div>
+
+                                            <div class="reports-info-grid">
+                                                <div class="reports-info-group">
+                                                    <label>Người gửi</label>
+                                                    <div class="reports-info-value"><i class="ph ph-user"></i> {{ $report->user->full_name ?? 'N/A' }} - {{ $report->user->phone ?? 'N/A' }}</div>
+                                                </div>
+                                                <div class="reports-info-group">
+                                                    <label>Danh mục</label>
+                                                    <div class="reports-info-value">{{ $report->category_label }}</div>
+                                                </div>
+                                                <div class="reports-info-group">
+                                                    <label>Thời gian gửi</label>
+                                                    <div class="reports-info-value"><i class="ph ph-clock"></i> {{ date('d/m/Y H:i', strtotime($report->created_at)) }}</div>
                                                 </div>
                                             </div>
-                                        @endif
 
-                                        @if($report->officer_note)
-                                            <div class="reports-info-group reports-full-width">
-                                                <label>Ghi chú của cán bộ</label>
-                                                <div class="reports-officer-note">
-                                                    <i class="ph ph-info"></i> {{ $report->officer_note }}
+                                            <div class="reports-info-group reports-full-width" style="margin-top: 12px;">
+                                                <label>Bộ phận chuyên trách (Tự động phân công):</label>
+                                                <input type="text" name="assigned_department" value="{{ $report->assigned_department_label }}" class="reports-select" style="width: 100%;">
+                                            </div>
+
+                                            <div class="reports-info-group reports-full-width" style="margin-top: 12px;">
+                                                <label>Cập nhật trạng thái xử lý:</label>
+                                                <select name="status" class="reports-select" style="width: 100%;">
+                                                    <option value="pending" {{ $report->status === 'pending' ? 'selected' : '' }}>Chờ tiếp nhận</option>
+                                                    <option value="processing" {{ $report->status === 'processing' ? 'selected' : '' }}>Đang xử lý (Chuyển bộ phận chuyên trách)</option>
+                                                    <option value="resolved" {{ $report->status === 'resolved' ? 'selected' : '' }}>Đã giải quyết & Công khai</option>
+                                                    <option value="rejected" {{ $report->status === 'rejected' ? 'selected' : '' }}>Từ chối</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="reports-info-group reports-full-width" style="margin-top: 12px;">
+                                                <label>Nội dung mô tả từ công dân</label>
+                                                <div class="reports-info-box">
+                                                    {{ $report->description }}
                                                 </div>
                                             </div>
-                                        @endif
+
+                                            <div class="reports-info-group reports-full-width" style="margin-top: 12px;">
+                                                <label>Ghi chú / Kết quả từ cán bộ chuyên trách</label>
+                                                <textarea name="officer_note" rows="3" class="reports-select" style="width: 100%; height: auto;" placeholder="Nhập kết quả xử lý hoặc nguyên nhân từ chối...">{{ $report->officer_note }}</textarea>
+                                            </div>
+
+                                            @if(count($images) > 0)
+                                                <div class="reports-info-group reports-full-width" style="margin-top: 12px;">
+                                                    <label>Hình ảnh đính kèm hiện trường</label>
+                                                    <div class="reports-image-grid">
+                                                        @foreach($images as $img)
+                                                            <div class="reports-img-preview"
+                                                                 data-fancybox="gallery-{{ $report->id }}"
+                                                                 data-src="{{ asset('storage/' . $img) }}"
+                                                                 style="cursor: zoom-in;">
+                                                                <img src="{{ asset('storage/' . $img) }}" alt="Hình ảnh đính kèm">
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="reports-modal-footer">
-                                <button class="reports-btn reports-btn-outline" onclick="toggleReportModal('modal-report-{{ $report->id }}')">Đóng</button>
-                                @if($report->status === 'pending')
-                                    <button class="reports-btn reports-btn-danger"><i class="ph ph-x"></i> Từ chối</button>
-                                    <button class="reports-btn reports-btn-primary"><i class="ph ph-download-simple"></i> Tiếp nhận xử lý</button>
-                                @elseif($report->status === 'processing')
-                                    <button class="reports-btn reports-btn-success"><i class="ph ph-check"></i> Hoàn thành xử lý</button>
-                                @endif
-                            </div>
+                                <div class="reports-modal-footer">
+                                    <button type="button" class="reports-btn reports-btn-outline" onclick="toggleReportModal('modal-report-{{ $report->id }}')">Đóng</button>
+                                    <button type="submit" class="reports-btn reports-btn-primary"><i class="ph ph-floppy-disk"></i> Lưu Cập Nhật</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 @empty
                     <tr>
-                        <td colspan="7">
+                        <td colspan="8">
                             <div class="reports-empty-state">
                                 <i class="ph ph-folder-open"></i>
-                                <p>Không có dữ liệu phản ánh nào.</p>
+                                <p>Không tìm thấy dữ liệu phản ánh hiện trường nào.</p>
                             </div>
                         </td>
                     </tr>
@@ -253,7 +249,6 @@
 
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
-
     <script>
         function toggleReportModal(modalId) {
             const modal = document.getElementById(modalId);
@@ -261,9 +256,7 @@
                 modal.classList.toggle('active');
             }
         }
-    </script>
 
-    <script>
         Fancybox.bind('[data-fancybox]', {
             Toolbar: {
                 display: {
@@ -276,12 +269,5 @@
                 zoom: true,
             }
         });
-
-        function toggleReportModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.toggle('active');
-            }
-        }
     </script>
 @endpush

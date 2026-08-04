@@ -10,8 +10,7 @@
                 <p class="citizens-subtitle">Quản lý danh sách tài khoản, phân quyền và giám sát hoạt động trên hệ thống.</p>
             </div>
             <div class="citizens-header-actions">
-                <button class="citizens-btn citizens-btn-outline"><i class="ph ph-export"></i> Xuất Excel</button>
-                <button class="citizens-btn citizens-btn-primary"><i class="ph ph-user-plus"></i> Thêm tài khoản</button>
+                <a href="{{ route('citizens.export') }}" class="citizens-btn citizens-btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;"><i class="ph ph-file-csv"></i> Xuất CSV</a>
             </div>
         </div>
 

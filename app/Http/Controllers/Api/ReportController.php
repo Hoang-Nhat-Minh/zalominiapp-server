@@ -62,14 +62,25 @@ class ReportController extends Controller
                 }
             }
 
+            $departmentMap = [
+                'environment'       => 'Bộ phận Tài nguyên & Môi trường',
+                'urban_order'       => 'Công an & Trật tự đô thị',
+                'traffic'           => 'Đội Cảnh sát giao thông & Đô thị',
+                'infrastructure'    => 'Bộ phận Quản lý Hạ tầng',
+                'electricity_water' => 'Bộ phận Điện lực - Cấp thoát nước',
+            ];
+
+            $assignedDept = $departmentMap[$request->category] ?? 'Tổ công tác chuyên trách';
+
             $report = Report::create([
-                'user_id'     => $request->user()->id,
-                'category'    => $request->category,
-                'title'       => $request->title,
-                'description' => $request->description,
-                'images'      => json_encode($imagePaths),
-                'address'     => $request->address,
-                'status'      => 'pending',
+                'user_id'             => $request->user()->id,
+                'category'            => $request->category,
+                'assigned_department' => $assignedDept,
+                'title'               => $request->title,
+                'description'         => $request->description,
+                'images'              => json_encode($imagePaths),
+                'address'             => $request->address,
+                'status'              => 'pending',
             ]);
 
             return response()->json([

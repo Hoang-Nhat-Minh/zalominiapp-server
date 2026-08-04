@@ -33,7 +33,7 @@ class WeatherService
     public function fetchOpenMeteoWeather($lat, $lng): array
     {
         try {
-            $url = "https://api.open-meteo.com/v1/forecast?latitude={$lat}&longitude={$lng}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,weather_code,surface_pressure,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,weather_code,pop&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_sum&timezone=Asia%2FHo_Chi_Minh";
+            $url = "https://api.open-meteo.com/v1/forecast?latitude={$lat}&longitude={$lng}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,weather_code,surface_pressure,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_sum&timezone=Asia%2FHo_Chi_Minh";
 
             $response = Http::timeout(5)->get($url);
 
@@ -128,7 +128,7 @@ class WeatherService
         $times = $hourly['time'] ?? [];
         $temps = $hourly['temperature_2m'] ?? [];
         $codes = $hourly['weather_code'] ?? [];
-        $pops  = $hourly['pop'] ?? [];
+        $pops  = $hourly['precipitation_probability'] ?? [];
 
         $nowHour = (int)now()->format('H');
         for ($i = $nowHour; $i < min($nowHour + 12, count($times)); $i++) {

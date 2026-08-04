@@ -40,14 +40,19 @@ Route::middleware('guest:officer')->group(function () {
 Route::middleware('auth:officer')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::get('/',            [DashboardController::class,  'index'])->name('dashboard');
-    Route::get('/appointments',[AppointmentController::class,'index'])->name('appointments');
-    Route::get('/profiles',    [ProfileController::class,    'index'])->name('profiles');
-    Route::get('/reports',     [ReportController::class,     'index'])->name('reports');
-    Route::get('/notifications',[NotificationController::class,'index'])->name('notifications');
-    Route::get('/documents',   [DocumentController::class,   'index'])->name('documents');
-    Route::get('/citizens',    [CitizenController::class,    'index'])->name('citizens');
-    Route::get('/digitalmaps', [DigitalmapController::class, 'index'])->name('digitalmaps');
+    Route::get('/',                 [DashboardController::class,  'index'])->name('dashboard');
+    Route::get('/dashboard/export', [DashboardController::class,  'export'])->name('dashboard.export');
+    Route::get('/appointments',     [AppointmentController::class,'index'])->name('appointments');
+    Route::get('/profiles',         [ProfileController::class,    'index'])->name('profiles');
+    Route::get('/profiles/export',  [ProfileController::class,    'export'])->name('profiles.export');
+    Route::get('/reports',          [ReportController::class,     'index'])->name('reports');
+    Route::get('/reports/export',   [ReportController::class,     'export'])->name('reports.export');
+    Route::put('/reports/{id}/status', [ReportController::class,  'updateStatus'])->name('reports.updateStatus');
+    Route::get('/notifications',    [NotificationController::class,'index'])->name('notifications');
+    Route::get('/documents',        [DocumentController::class,   'index'])->name('documents');
+    Route::get('/citizens',         [CitizenController::class,    'index'])->name('citizens');
+    Route::get('/citizens/export',  [CitizenController::class,    'export'])->name('citizens.export');
+    Route::get('/digitalmaps',      [DigitalmapController::class, 'index'])->name('digitalmaps');
     Route::resource('schools', SchoolController::class);
     Route::resource('hotlines', HotlineController::class);
     Route::resource('weather-alerts', WeatherAlertController::class);

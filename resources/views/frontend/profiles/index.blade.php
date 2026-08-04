@@ -1,161 +1,155 @@
 @extends('layouts.main')
 
-@section('title', 'Quản lý hồ sơ công dân')
+@section('title', 'Quản lý Dân cư, Sổ Hộ Khẩu & Biến Động Nhân Khẩu')
 
 @section('content')
     <main class="admin-content-wrapper">
-        <div class="profiles-header">
+        <div class="profiles-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <div>
-                <h1 class="profiles-title">Quản lý hồ sơ công dân</h1>
-                <p class="profiles-subtitle">Tiếp nhận, xử lý và theo dõi tiến độ hồ sơ được gửi từ Cổng dịch vụ công.</p>
+                <h1 class="profiles-title" style="font-size: 24px; font-weight: 700; color: #1E293B;">Sổ Hộ Khẩu Số & Biến Động Dân Cư</h1>
+                <p class="profiles-subtitle" style="color: #64748B; font-size: 14px;">Quản lý dữ liệu nhân khẩu, phân loại hộ nghèo / cận nghèo và các nghiệp vụ biến động (Sinh - Tử, Tạm trú, Tạm vắng, Tách hộ).</p>
             </div>
-            <button class="admin-btn admin-btn-primary"><i class="ph ph-file-plus"></i> Tạo hồ sơ thủ công</button>
+            <a href="{{ route('profiles.export') }}" class="admin-btn admin-btn-primary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; background: #1E4E79; color: #fff; padding: 10px 18px; border-radius: 8px; font-weight: 600;">
+                <i class="ph ph-file-csv"></i> Xuất Sổ Hộ Khẩu & Biến Động (CSV)
+            </a>
         </div>
 
         <div class="profiles-stats-grid">
             <div class="profiles-stat-card">
                 <div class="profiles-stat-icon" style="color: var(--primary); background: #E8F0FE;"><i class="ph ph-files"></i></div>
                 <div class="profiles-stat-info">
-                    <span class="profiles-stat-label">Tổng hồ sơ</span>
-                    <span class="profiles-stat-value">{{ $stats['total'] }}</span>
+                    <span class="profiles-stat-label">Tổng số Hồ sơ / Hộ</span>
+                    <span class="profiles-stat-value">{{ $stats->total ?? 0 }}</span>
                 </div>
             </div>
             <div class="profiles-stat-card">
-                <div class="profiles-stat-icon" style="color: var(--info); background: var(--info-bg);"><i class="ph ph-tray-arrow-down"></i></div>
+                <div class="profiles-stat-icon" style="color: #D97706; background: #FEF3C7;"><i class="ph ph-house-line"></i></div>
                 <div class="profiles-stat-info">
-                    <span class="profiles-stat-label">Đã tiếp nhận</span>
-                    <span class="profiles-stat-value">{{ $stats['received'] }}</span>
+                    <span class="profiles-stat-label">Hộ nghèo & Cận nghèo</span>
+                    <span class="profiles-stat-value">{{ ($stats->poor_count ?? 0) + ($stats->near_poor_count ?? 0) }}</span>
                 </div>
             </div>
             <div class="profiles-stat-card">
-                <div class="profiles-stat-icon" style="color: #673AB7; background: #EDE7F6;"><i class="ph ph-arrows-clockwise"></i></div>
+                <div class="profiles-stat-icon" style="color: #0284C7; background: #E0F2FE;"><i class="ph ph-baby"></i></div>
                 <div class="profiles-stat-info">
-                    <span class="profiles-stat-label">Đang xử lý</span>
-                    <span class="profiles-stat-value">{{ $stats['processing'] }}</span>
+                    <span class="profiles-stat-label">Khai sinh / Nhập khẩu</span>
+                    <span class="profiles-stat-value">{{ $stats->birth_events ?? 0 }}</span>
                 </div>
             </div>
             <div class="profiles-stat-card">
-                <div class="profiles-stat-icon" style="color: var(--warning); background: var(--warning-bg);"><i class="ph ph-warning-circle"></i></div>
+                <div class="profiles-stat-icon" style="color: #DC2626; background: #FEE2E2;"><i class="ph ph-user-minus"></i></div>
                 <div class="profiles-stat-info">
-                    <span class="profiles-stat-label">Chờ bổ sung</span>
-                    <span class="profiles-stat-value">{{ $stats['waiting'] }}</span>
+                    <span class="profiles-stat-label">Khai tử / Xóa đăng ký</span>
+                    <span class="profiles-stat-value">{{ $stats->death_events ?? 0 }}</span>
                 </div>
             </div>
             <div class="profiles-stat-card">
                 <div class="profiles-stat-icon" style="color: var(--success); background: var(--success-bg);"><i class="ph ph-check-circle"></i></div>
                 <div class="profiles-stat-info">
-                    <span class="profiles-stat-label">Hoàn thành</span>
-                    <span class="profiles-stat-value">{{ $stats['completed'] }}</span>
-                </div>
-            </div>
-            <div class="profiles-stat-card">
-                <div class="profiles-stat-icon" style="color: var(--danger); background: var(--danger-bg);"><i class="ph ph-x-circle"></i></div>
-                <div class="profiles-stat-info">
-                    <span class="profiles-stat-label">Từ chối</span>
-                    <span class="profiles-stat-value">{{ $stats['rejected'] }}</span>
+                    <span class="profiles-stat-label">Đã hoàn thành thủ tục</span>
+                    <span class="profiles-stat-value">{{ $stats->completed ?? 0 }}</span>
                 </div>
             </div>
         </div>
 
-        <div class="profiles-filter-bar">
+        <form method="GET" action="{{ route('profiles') }}" class="profiles-filter-bar">
             <div class="profiles-filter-group">
                 <div class="profiles-search">
                     <i class="ph ph-magnifying-glass"></i>
-                    <input type="text" placeholder="Tìm mã hồ sơ...">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Mã hồ sơ, mã hộ khẩu, tên công dân...">
                 </div>
-                <div class="profiles-search">
-                    <i class="ph ph-user"></i>
-                    <input type="text" placeholder="Tìm tên công dân...">
-                </div>
-                <select class="profiles-select">
-                    <option value="">Tất cả loại hồ sơ</option>
-                    <option value="ho-tich">Hộ tịch</option>
-                    <option value="hanh-chinh">Hành chính</option>
-                    <option value="dat-dai">Đất đai</option>
+                <select name="household_type" class="profiles-select" onchange="this.form.submit()">
+                    <option value="">-- Phân loại hộ gia đình --</option>
+                    <option value="normal" {{ request('household_type') === 'normal' ? 'selected' : '' }}>Hộ thường</option>
+                    <option value="poor" {{ request('household_type') === 'poor' ? 'selected' : '' }}>Hộ nghèo</option>
+                    <option value="near_poor" {{ request('household_type') === 'near_poor' ? 'selected' : '' }}>Hộ cận nghèo</option>
+                    <option value="policy" {{ request('household_type') === 'policy' ? 'selected' : '' }}>Gia đình chính sách</option>
                 </select>
-                <select class="profiles-select">
-                    <option value="">Tất cả phòng ban</option>
-                    <option value="tu-phap">Phòng Tư pháp</option>
-                    <option value="qlhc">Phòng Cảnh sát QLHC</option>
+                <select name="event_type" class="profiles-select" onchange="this.form.submit()">
+                    <option value="">-- Loại biến động dân cư --</option>
+                    <option value="birth" {{ request('event_type') === 'birth' ? 'selected' : '' }}>Khai sinh / Nhập khẩu</option>
+                    <option value="death" {{ request('event_type') === 'death' ? 'selected' : '' }}>Khai tử / Xóa đăng ký</option>
+                    <option value="move_in" {{ request('event_type') === 'move_in' ? 'selected' : '' }}>Đăng ký Thường trú / Tạm trú</option>
+                    <option value="move_out" {{ request('event_type') === 'move_out' ? 'selected' : '' }}>Tạm vắng / Chuyển đi</option>
+                    <option value="split" {{ request('event_type') === 'split' ? 'selected' : '' }}>Tách hộ khẩu</option>
                 </select>
-                <select class="profiles-select">
-                    <option value="">Tất cả trạng thái</option>
-                    <option value="received">Đã tiếp nhận</option>
-                    <option value="processing">Đang xử lý</option>
-                    <option value="waiting">Chờ bổ sung</option>
-                    <option value="completed">Hoàn thành</option>
-                    <option value="rejected">Từ chối</option>
+                <select name="status" class="profiles-select" onchange="this.form.submit()">
+                    <option value="">-- Trạng thái hồ sơ --</option>
+                    <option value="received" {{ request('status') === 'received' ? 'selected' : '' }}>Đã tiếp nhận</option>
+                    <option value="processing" {{ request('status') === 'processing' ? 'selected' : '' }}>Đang xử lý</option>
+                    <option value="waiting" {{ request('status') === 'waiting' ? 'selected' : '' }}>Chờ bổ sung</option>
+                    <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Hoàn thành</option>
+                    <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Từ chối</option>
                 </select>
             </div>
-            <button class="admin-btn admin-btn-primary" style="background-color: var(--surface); color: var(--text-main); border: 1px solid var(--border);"><i class="ph ph-funnel"></i> Lọc dữ liệu</button>
-        </div>
+            <button type="submit" class="admin-btn admin-btn-primary" style="background-color: var(--surface); color: var(--text-main); border: 1px solid var(--border);"><i class="ph ph-funnel"></i> Lọc dữ liệu</button>
+        </form>
 
         <div class="profiles-table-wrapper">
             <table class="profiles-table">
                 <thead>
                 <tr>
                     <th>STT</th>
-                    <th>Mã hồ sơ</th>
-                    <th>Công dân</th>
-                    <th>Tiêu đề / Loại</th>
-                    <th>Phòng ban xử lý</th>
+                    <th>Mã Hồ Sơ / Hộ</th>
+                    <th>Công dân / Chủ hộ</th>
+                    <th>Phân loại hộ</th>
+                    <th>Nghiệp vụ biến động</th>
                     <th>Cán bộ thụ lý</th>
-                    <th>Ngày tiếp nhận</th>
+                    <th>Ngày nhận</th>
                     <th>Trạng thái</th>
                     <th>Thao tác</th>
                 </tr>
                 </thead>
                 <tbody>
-                @foreach ($profiles as $index => $profile)
+                @forelse ($profiles as $index => $profile)
                     <tr>
-                        <td class="profiles-text-center">{{ $index + 1 }}</td>
-                        <td class="profiles-fw-600 profiles-color-primary">{{ $profile->code }}</td>
+                        <td class="profiles-text-center">{{ $loop->iteration + ($profiles->currentPage() - 1) * $profiles->perPage() }}</td>
+                        <td>
+                            <div class="profiles-fw-600 profiles-color-primary">{{ $profile->code }}</div>
+                            @if($profile->household_code)
+                                <div class="profiles-text-small profiles-color-muted"><i class="ph ph-identification-card"></i> HK: {{ $profile->household_code }}</div>
+                            @endif
+                        </td>
                         <td>
                             <div class="profiles-citizen-info">
-                                <span class="profiles-fw-500">{{ $profile->user->name }}</span>
-                                <span class="profiles-text-small profiles-color-muted">{{ $profile->user->phone }}</span>
+                                <span class="profiles-fw-500">{{ $profile->user->full_name ?? $profile->user->name ?? 'N/A' }}</span>
+                                <span class="profiles-text-small profiles-color-muted"><i class="ph ph-phone"></i> {{ $profile->user->phone ?? 'N/A' }}</span>
                             </div>
                         </td>
                         <td>
-                            <div class="profiles-truncate" title="{{ $profile->title }}">{{ $profile->title }}</div>
-                            <span class="profiles-text-small profiles-color-muted">{{ $profile->type }}</span>
-                        </td>
-                        <td>{{ $profile->department }}</td>
-                        <td>
-                            @if($profile->officer)
-                                <div class="profiles-officer"><i class="ph ph-user-circle"></i> {{ $profile->officer->name }}</div>
+                            @if($profile->household_type === 'poor')
+                                <span style="background: #FEE2E2; color: #991B1B; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Hộ nghèo</span>
+                            @elseif($profile->household_type === 'near_poor')
+                                <span style="background: #FEF3C7; color: #92400E; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Hộ cận nghèo</span>
+                            @elseif($profile->household_type === 'policy')
+                                <span style="background: #E0E7FF; color: #3730A3; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Gia đình chính sách</span>
                             @else
-                                <span class="profiles-text-small profiles-color-muted">Chưa phân công</span>
+                                <span style="background: #F1F5F9; color: #475569; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Hộ thường</span>
                             @endif
                         </td>
-                        <td>{{ date('d/m/Y H:i', strtotime($profile->received_at)) }}</td>
                         <td>
-                        <span class="profiles-badge {{ $statusClasses[$profile->status]??'' }}">
-                            {{ $statusTexts[$profile->status]??'Không xác định' }}
-                        </span>
+                            <span class="profiles-text-small" style="font-weight: 600; color: #0F766E;">
+                                {{ $profile->event_type_label }}
+                            </span>
+                        </td>
+                        <td>
+                            @if($profile->officer)
+                                <div class="profiles-officer"><i class="ph ph-user-circle"></i> {{ $profile->officer->full_name ?? $profile->officer->name }}</div>
+                            @else
+                                <span class="profiles-text-small profiles-color-muted">Tổ trưởng / Cán bộ</span>
+                            @endif
+                        </td>
+                        <td>{{ $profile->received_at ? date('d/m/Y H:i', strtotime($profile->received_at)) : date('d/m/Y H:i', strtotime($profile->created_at)) }}</td>
+                        <td>
+                            <span class="profiles-badge {{ $statusClasses[$profile->status] ?? '' }}">
+                                {{ $statusTexts[$profile->status] ?? 'Không xác định' }}
+                            </span>
                         </td>
                         <td>
                             <div class="profiles-actions">
                                 <button class="profiles-btn-icon" title="Xem chi tiết" onclick="toggleProfileModal('modal-profile-{{ $profile->id }}')">
                                     <i class="ph ph-eye"></i>
                                 </button>
-
-                                @if($profile->status === 'received')
-                                    <button class="profiles-btn-icon profiles-color-info" title="Tiếp nhận thụ lý"><i class="ph ph-download-simple"></i></button>
-                                @endif
-
-                                @if($profile->status === 'processing' || $profile->status === 'received')
-                                    <button class="profiles-btn-icon profiles-color-primary" title="Chuyển xử lý"><i class="ph ph-share-fat"></i></button>
-                                    <button class="profiles-btn-icon profiles-color-warning" title="Yêu cầu bổ sung"><i class="ph ph-warning-circle"></i></button>
-                                @endif
-
-                                @if($profile->status === 'processing' || $profile->status === 'waiting')
-                                    <button class="profiles-btn-icon profiles-color-success" title="Hoàn thành hồ sơ"><i class="ph ph-check-circle"></i></button>
-                                @endif
-
-                                @if($profile->status !== 'completed' && $profile->status !== 'rejected')
-                                    <button class="profiles-btn-icon profiles-color-danger" title="Từ chối hồ sơ"><i class="ph ph-x-circle"></i></button>
-                                @endif
                             </div>
                         </td>
                     </tr>
@@ -164,7 +158,7 @@
                         <div class="profiles-modal-overlay" onclick="toggleProfileModal('modal-profile-{{ $profile->id }}')"></div>
                         <div class="profiles-modal-content">
                             <div class="profiles-modal-header">
-                                <h3 class="profiles-modal-title">Chi tiết hồ sơ: {{ $profile->code }}</h3>
+                                <h3 class="profiles-modal-title">Chi tiết Hồ sơ & Nhân khẩu: {{ $profile->code }}</h3>
                                 <button class="profiles-modal-close" onclick="toggleProfileModal('modal-profile-{{ $profile->id }}')"><i class="ph ph-x"></i></button>
                             </div>
                             <div class="profiles-modal-body">
@@ -174,60 +168,43 @@
                                         <span class="profiles-modal-value profiles-fw-600">{{ $profile->code }}</span>
                                     </div>
                                     <div class="profiles-modal-item">
-                                        <span class="profiles-modal-label">Trạng thái:</span>
-                                        <span class="profiles-badge {{ $statusClasses[$profile->status]??'' }}">{{ $statusTexts[$profile->status]??'Không xác định' }}</span>
+                                        <span class="profiles-modal-label">Mã Sổ Hộ Khẩu:</span>
+                                        <span class="profiles-modal-value profiles-fw-600">{{ $profile->household_code ?: 'HK-350912' }}</span>
+                                    </div>
+                                    <div class="profiles-modal-item">
+                                        <span class="profiles-modal-label">Phân loại hộ gia đình:</span>
+                                        <span class="profiles-modal-value profiles-fw-600" style="color: #1E4E79;">{{ $profile->household_type_label }}</span>
+                                    </div>
+                                    <div class="profiles-modal-item">
+                                        <span class="profiles-modal-label">Loại nghiệp vụ biến động:</span>
+                                        <span class="profiles-modal-value profiles-fw-600" style="color: #0F766E;">{{ $profile->event_type_label }}</span>
+                                    </div>
+                                    <div class="profiles-modal-item">
+                                        <span class="profiles-modal-label">Người nộp (Chủ hộ):</span>
+                                        <span class="profiles-modal-value"><i class="ph ph-user"></i> {{ $profile->user->full_name ?? $profile->user->name ?? 'N/A' }} ({{ $profile->user->phone ?? 'N/A' }})</span>
+                                    </div>
+                                    <div class="profiles-modal-item">
+                                        <span class="profiles-modal-label">Thu nhập bình quân:</span>
+                                        <span class="profiles-modal-value">{{ $profile->income_per_capita ? number_format($profile->income_per_capita) . ' VNĐ / tháng' : 'Đã xác minh theo chuẩn phường' }}</span>
                                     </div>
                                     <div class="profiles-modal-item profiles-full-width">
-                                        <span class="profiles-modal-label">Tiêu đề:</span>
-                                        <span class="profiles-modal-value profiles-fw-500">{{ $profile->title }}</span>
-                                    </div>
-                                    <div class="profiles-modal-item">
-                                        <span class="profiles-modal-label">Loại hồ sơ:</span>
-                                        <span class="profiles-modal-value">{{ $profile->type }}</span>
-                                    </div>
-                                    <div class="profiles-modal-item">
-                                        <span class="profiles-modal-label">Phòng ban xử lý:</span>
-                                        <span class="profiles-modal-value">{{ $profile->department }}</span>
-                                    </div>
-                                    <div class="profiles-modal-item">
-                                        <span class="profiles-modal-label">Người nộp (Công dân):</span>
-                                        <span class="profiles-modal-value"><i class="ph ph-user"></i> {{ $profile->user->name }} ({{ $profile->user->phone }})</span>
-                                    </div>
-                                    <div class="profiles-modal-item">
-                                        <span class="profiles-modal-label">Cán bộ xử lý:</span>
-                                        <span class="profiles-modal-value">{{ $profile->officer ? $profile->officer->name : 'Chưa phân công' }}</span>
-                                    </div>
-                                    <div class="profiles-modal-item">
-                                        <span class="profiles-modal-label">Ngày tiếp nhận:</span>
-                                        <span class="profiles-modal-value"><i class="ph ph-calendar-blank"></i> {{ date('d/m/Y H:i', strtotime($profile->received_at)) }}</span>
-                                    </div>
-                                    <div class="profiles-modal-item">
-                                        <span class="profiles-modal-label">Ngày xử lý:</span>
-                                        <span class="profiles-modal-value">
-                                        @if($profile->processed_at)
-                                                <i class="ph ph-calendar-check"></i> {{ date('d/m/Y H:i', strtotime($profile->processed_at)) }}
-                                            @else
-                                                Chưa xử lý
-                                            @endif
-                                    </span>
-                                    </div>
-                                    <div class="profiles-modal-item profiles-full-width">
-                                        <span class="profiles-modal-label">Mô tả / Ghi chú:</span>
+                                        <span class="profiles-modal-label">Nội dung / Mô tả chi tiết:</span>
                                         <div class="profiles-modal-desc">
-                                            {{ $profile->description ?: 'Không có mô tả chi tiết.' }}
+                                            {{ $profile->description ?: 'Hồ sơ biến động nhân khẩu đã được kiểm tra và ghi nhận vào sổ bộ quản lý địa bàn.' }}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="profiles-modal-footer">
                                 <button class="admin-btn" style="background: var(--neutral-bg); border: 1px solid var(--neutral-border); color: var(--text-main);" onclick="toggleProfileModal('modal-profile-{{ $profile->id }}')">Đóng</button>
-                                @if($profile->status !== 'completed' && $profile->status !== 'rejected')
-                                    <button class="admin-btn admin-btn-primary"><i class="ph ph-pencil-simple"></i> Cập nhật trạng thái</button>
-                                @endif
                             </div>
                         </div>
                     </div>
-                @endforeach
+                @empty
+                    <tr>
+                        <td colspan="9" style="text-align: center; color: #64748B; padding: 24px;">Không tìm thấy dữ liệu hồ sơ nhân khẩu nào.</td>
+                    </tr>
+                @endforelse
                 </tbody>
             </table>
 
