@@ -32,28 +32,13 @@ class WeatherController extends Controller
                     ->get();
             }
 
-            if (empty($alerts) || count($alerts) === 0) {
-                // Fallback alert if table not migrated or no alert exists
-                $alerts = [
-                    [
-                        'id' => 1,
-                        'title' => 'Cảnh báo nắng nóng diện rộng & Chỉ số UV cao',
-                        'level' => 'warning',
-                        'area' => 'Toàn phường',
-                        'content' => 'Nhiệt độ đỉnh điểm lên tới 37°C - 39°C trong khung giờ 11h00 - 15h00. Người dân lưu ý hạn chế ra ngoài, đeo khẩu trang chống nắng, uống đủ nước và cảnh giác nguy cơ chập cháy điện.',
-                        'is_active' => true,
-                        'created_at' => now()->toISOString(),
-                    ]
-                ];
-            }
-
             return response()->json([
                 'success' => true,
                 'message' => 'Dữ liệu dự báo thời tiết & cảnh báo cực đoan',
                 'data' => [
-                    'current' => $forecast['current'],
-                    'hourly'  => $forecast['hourly'],
-                    'daily'   => $forecast['daily'],
+                    'current' => $forecast['current'] ?? null,
+                    'hourly'  => $forecast['hourly'] ?? [],
+                    'daily'   => $forecast['daily'] ?? [],
                     'alerts'  => $alerts,
                 ]
             ]);
@@ -62,7 +47,7 @@ class WeatherController extends Controller
                 'success' => false,
                 'message' => 'Lỗi lấy dữ liệu thời tiết: ' . $e->getMessage(),
                 'data'    => $this->getFallbackWeatherData()
-            ], 200);
+            ], 500);
         }
     }
 
@@ -81,15 +66,15 @@ class WeatherController extends Controller
 
                 return [
                     'current' => [
-                        'temp'           => round($current['temperature_2m'] ?? 32),
-                        'feels_like'     => round($current['apparent_temperature'] ?? 35),
-                        'humidity'       => round($current['relative_humidity_2m'] ?? 75),
-                        'wind_speed'     => round($current['wind_speed_10m'] ?? 12),
-                        'pressure'       => round($current['surface_pressure'] ?? 1008),
-                        'weather_code'   => $current['weather_code'] ?? 1,
-                        'condition_text' => $this->mapWeatherCode($current['weather_code'] ?? 1),
-                        'uv_index'       => round($daily['uv_index_max'][0] ?? 8),
-                        'aqi'            => 'Tốt (AQI 42)',
+                        'temp'           => round($current['temperature_2m'] ?? 0),
+                        'feels_like'     => round($current['apparent_temperature'] ?? 0),
+                        'humidity'       => round($current['relative_humidity_2m'] ?? 0),
+                        'wind_speed'     => round($current['wind_speed_10m'] ?? 0),
+                        'pressure'       => round($current['surface_pressure'] ?? 0),
+                        'weather_code'   => $current['weather_code'] ?? 0,
+                        'condition_text' => $this->mapWeatherCode($current['weather_code'] ?? 0),
+                        'uv_index'       => round($daily['uv_index_max'][0] ?? 0),
+                        'aqi'            => 'Tốt',
                         'location_name'  => 'Địa bàn Phường',
                         'updated_at'     => now()->format('H:i - d/m/Y'),
                     ],
@@ -117,10 +102,10 @@ class WeatherController extends Controller
             $hourStr = isset($times[$i]) ? date('H:i', strtotime($times[$i])) : "{$i}:00";
             $result[] = [
                 'time' => $hourStr,
-                'temp' => round($temps[$i] ?? 30),
-                'code' => $codes[$i] ?? 1,
-                'condition' => $this->mapWeatherCode($codes[$i] ?? 1),
-                'pop'  => round($pops[$i] ?? 10) . '%',
+                'temp' => round($temps[$i] ?? 0),
+                'code' => $codes[$i] ?? 0,
+                'condition' => $this->mapWeatherCode($codes[$i] ?? 0),
+                'pop'  => round($pops[$i] ?? 0) . '%',
             ];
         }
 
@@ -142,10 +127,10 @@ class WeatherController extends Controller
             $result[] = [
                 'day'       => $dayName,
                 'date'      => $dateStr,
-                'temp_max'  => round($maxs[$i] ?? 33),
-                'temp_min'  => round($mins[$i] ?? 26),
-                'code'      => $codes[$i] ?? 1,
-                'condition' => $this->mapWeatherCode($codes[$i] ?? 1),
+                'temp_max'  => round($maxs[$i] ?? 0),
+                'temp_min'  => round($mins[$i] ?? 0),
+                'code'      => $codes[$i] ?? 0,
+                'condition' => $this->mapWeatherCode($codes[$i] ?? 0),
             ];
         }
 
@@ -169,44 +154,10 @@ class WeatherController extends Controller
     private function getFallbackWeatherData(): array
     {
         return [
-            'current' => [
-                'temp'           => 32,
-                'feels_like'     => 36,
-                'humidity'       => 72,
-                'wind_speed'     => 14,
-                'pressure'       => 1008,
-                'weather_code'   => 1,
-                'condition_text' => 'Trời có mây, nắng oi',
-                'uv_index'       => 8,
-                'aqi'            => 'Trung bình (AQI 58)',
-                'location_name'  => 'Địa bàn Phường',
-                'updated_at'     => now()->format('H:i - d/m/Y'),
-            ],
-            'hourly' => [
-                ['time' => '09:00', 'temp' => 31, 'condition' => 'Nắng nhẹ', 'pop' => '10%'],
-                ['time' => '12:00', 'temp' => 34, 'condition' => 'Nắng gắt', 'pop' => '15%'],
-                ['time' => '15:00', 'temp' => 35, 'condition' => 'Nắng gắt', 'pop' => '20%'],
-                ['time' => '18:00', 'temp' => 31, 'condition' => 'Có mây', 'pop' => '30%'],
-                ['time' => '21:00', 'temp' => 28, 'condition' => 'Trời mát', 'pop' => '10%'],
-            ],
-            'daily' => [
-                ['day' => 'Hôm nay', 'date' => now()->format('d/m'), 'temp_max' => 35, 'temp_min' => 27, 'condition' => 'Nắng gắt'],
-                ['day' => 'Ngày mai', 'date' => now()->addDays(1)->format('d/m'), 'temp_max' => 34, 'temp_min' => 26, 'condition' => 'Mưa rào chiều'],
-                ['day' => 'Thứ 4', 'date' => now()->addDays(2)->format('d/m'), 'temp_max' => 32, 'temp_min' => 25, 'condition' => 'Có mây'],
-                ['day' => 'Thứ 5', 'date' => now()->addDays(3)->format('d/m'), 'temp_max' => 33, 'temp_min' => 26, 'condition' => 'Nắng đẹp'],
-                ['day' => 'Thứ 6', 'date' => now()->addDays(4)->format('d/m'), 'temp_max' => 34, 'temp_min' => 27, 'condition' => 'Có mây'],
-            ],
-            'alerts' => [
-                [
-                    'id' => 1,
-                    'title' => 'Cảnh báo nắng nóng diện rộng & Chỉ số UV cao',
-                    'level' => 'warning',
-                    'area' => 'Toàn phường',
-                    'content' => 'Nhiệt độ đỉnh điểm lên tới 37°C - 39°C trong khung giờ 11h00 - 15h00. Người dân lưu ý hạn chế ra ngoài, đeo khẩu trang chống nắng, uống đủ nước và cảnh giác nguy cơ chập cháy điện.',
-                    'is_active' => true,
-                    'created_at' => now()->toISOString(),
-                ]
-            ]
+            'current' => null,
+            'hourly'  => [],
+            'daily'   => [],
+            'alerts'  => [],
         ];
     }
 }
