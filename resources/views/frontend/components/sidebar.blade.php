@@ -44,6 +44,18 @@
     </div>
 
     <div class="admin-nav-group">
+        <span class="admin-nav-title">Tin Tức & Truyền Thông</span>
+        <a href="{{ route('news.index') }}" class="admin-nav-item {{ Route::is('news.*')?'admin-active':'' }}">
+            <i class="ph ph-newspaper"></i>
+            <span class="admin-nav-text">Quản lý bài viết tin tức</span>
+        </a>
+        <a href="{{ route('news-categories.index') }}" class="admin-nav-item {{ Route::is('news-categories.*')?'admin-active':'' }}">
+            <i class="ph ph-folders"></i>
+            <span class="admin-nav-text">Danh mục tin tức</span>
+        </a>
+    </div>
+
+    <div class="admin-nav-group">
         <span class="admin-nav-title">Phản Ánh</span>
         <a href="{{ route('reports') }}" class="admin-nav-item {{ Route::is('reports')?'admin-active':'' }}">
             <i class="ph ph-chat-centered-text"></i>

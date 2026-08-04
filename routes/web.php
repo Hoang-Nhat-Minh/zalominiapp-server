@@ -13,6 +13,8 @@ use App\Http\Controllers\Web\SchoolController;
 use App\Http\Controllers\Web\HotlineController;
 use App\Http\Controllers\Web\WeatherAlertController;
 use App\Http\Controllers\Web\SurveyController;
+use App\Http\Controllers\Web\NewsCategoryController;
+use App\Http\Controllers\Web\NewsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -57,4 +59,6 @@ Route::middleware('auth:officer')->group(function () {
     Route::resource('hotlines', HotlineController::class);
     Route::resource('weather-alerts', WeatherAlertController::class);
     Route::resource('surveys', SurveyController::class);
+    Route::resource('news-categories', NewsCategoryController::class);
+    Route::resource('news', NewsController::class);
 });

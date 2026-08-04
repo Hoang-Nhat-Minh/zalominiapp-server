@@ -75,10 +75,11 @@ Route::middleware('log.api')->group(function () {
             Route::put('/read-all',      [NotificationController::class, 'readAll']);
         });
 
-        // Posts
+        // Posts / News
         Route::prefix('posts')->group(function () {
-            Route::get('/',      [PostController::class, 'index']);
-            Route::get('/{id}',  [PostController::class, 'show']);
+            Route::get('/',           [PostController::class, 'index']);
+            Route::get('/categories', [PostController::class, 'categories']);
+            Route::get('/{id}',       [PostController::class, 'show']);
         });
 
         // Party
