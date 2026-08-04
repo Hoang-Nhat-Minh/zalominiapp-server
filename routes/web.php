@@ -10,6 +10,9 @@ use App\Http\Controllers\Web\DocumentController;
 use App\Http\Controllers\Web\CitizenController;
 use App\Http\Controllers\Web\DigitalmapController;
 use App\Http\Controllers\Web\SchoolController;
+use App\Http\Controllers\Web\HotlineController;
+use App\Http\Controllers\Web\WeatherAlertController;
+use App\Http\Controllers\Web\SurveyController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -46,4 +49,7 @@ Route::middleware('auth:officer')->group(function () {
     Route::get('/citizens',    [CitizenController::class,    'index'])->name('citizens');
     Route::get('/digitalmaps', [DigitalmapController::class, 'index'])->name('digitalmaps');
     Route::resource('schools', SchoolController::class);
+    Route::resource('hotlines', HotlineController::class);
+    Route::resource('weather-alerts', WeatherAlertController::class);
+    Route::resource('surveys', SurveyController::class);
 });

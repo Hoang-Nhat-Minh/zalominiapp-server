@@ -10,6 +10,9 @@ use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SchoolController;
+use App\Http\Controllers\Api\HotlineController;
+use App\Http\Controllers\Api\WeatherController;
+use App\Http\Controllers\Api\SurveyController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -97,6 +100,23 @@ Route::middleware('log.api')->group(function () {
         Route::prefix('schools')->group(function () {
             Route::get('/',          [SchoolController::class, 'index']);
             Route::get('/{id}',      [SchoolController::class, 'show']);
+        });
+
+        // Hotlines
+        Route::prefix('hotlines')->group(function () {
+            Route::get('/',          [HotlineController::class, 'index']);
+        });
+
+        // Weather
+        Route::prefix('weather')->group(function () {
+            Route::get('/',          [WeatherController::class, 'index']);
+        });
+
+        // Surveys
+        Route::prefix('surveys')->group(function () {
+            Route::get('/',             [SurveyController::class, 'index']);
+            Route::get('/{id}',         [SurveyController::class, 'show']);
+            Route::post('/{id}/submit', [SurveyController::class, 'submit']);
         });
 
         Route::post('/location/resolve', [ReportController::class, 'location']);

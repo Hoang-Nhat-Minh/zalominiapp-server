@@ -33,6 +33,14 @@
             <i class="ph ph-graduation-cap"></i>
             <span class="admin-nav-text">Cơ sở giáo dục</span>
         </a>
+        <a href="{{ route('hotlines.index') }}" class="admin-nav-item {{ Route::is('hotlines.*')?'admin-active':'' }}">
+            <i class="ph ph-phone-call"></i>
+            <span class="admin-nav-text">Đường dây nóng</span>
+        </a>
+        <a href="{{ route('weather-alerts.index') }}" class="admin-nav-item {{ Route::is('weather-alerts.*')?'admin-active':'' }}">
+            <i class="ph ph-cloud-sun"></i>
+            <span class="admin-nav-text">Thời tiết & Cảnh báo</span>
+        </a>
     </div>
 
     <div class="admin-nav-group">
@@ -48,10 +56,10 @@
     </div>
 
     <div class="admin-nav-group">
-        <span class="admin-nav-title">Biểu Quyết</span>
-        <a href="#" class="admin-nav-item">
-            <i class="ph ph-check-square-offset"></i>
-            <span class="admin-nav-text">Quản lý biểu quyết</span>
+        <span class="admin-nav-title">Biểu Quyết & Khảo Sát</span>
+        <a href="{{ route('surveys.index') }}" class="admin-nav-item {{ Route::is('surveys.*')?'admin-active':'' }}">
+            <i class="ph ph-clipboard-text"></i>
+            <span class="admin-nav-text">Quản lý khảo sát dân cư</span>
         </a>
         <a href="#" class="admin-nav-item">
             <i class="ph ph-chart-bar"></i>
