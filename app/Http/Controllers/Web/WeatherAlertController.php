@@ -4,10 +4,18 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\WeatherAlert;
+use App\Services\WeatherService;
 use Illuminate\Http\Request;
 
 class WeatherAlertController extends Controller
 {
+    protected WeatherService $weatherService;
+
+    public function __construct(WeatherService $weatherService)
+    {
+        $this->weatherService = $weatherService;
+    }
+
     public function index(Request $request)
     {
         $query = WeatherAlert::query();
@@ -35,7 +43,11 @@ class WeatherAlertController extends Controller
             'active'  => WeatherAlert::where('is_active', true)->count(),
         ];
 
-        return view('frontend.weather.index', compact('alerts', 'stats'));
+        // Lấy dữ liệu thời tiết thực tế từ Open-Meteo API qua WeatherService
+        $weatherData = $this->weatherService->getWeather();
+        $currentWeather = $weatherData['current'] ?? null;
+
+        return view('frontend.weather.index', compact('alerts', 'stats', 'currentWeather', 'weatherData'));
     }
 
     public function create()

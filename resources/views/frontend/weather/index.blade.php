@@ -21,6 +21,60 @@
             </div>
         @endif
 
+        {{-- Widget Dữ liệu Thời tiết Thực tế --}}
+        <div class="gov-card" style="background: linear-gradient(135deg, #0057FF 0%, #0099FF 100%); padding: 20px; border-radius: 12px; color: white; margin-bottom: 24px; box-shadow: 0 4px 14px rgba(0,87,255,0.25);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; opacity: 0.9; font-weight: 500; margin-bottom: 6px;">
+                        <i class="ph ph-map-pin" style="font-size: 16px;"></i>
+                        <span>Thời tiết thời gian thực: <strong>{{ $currentWeather['location_name'] ?? 'Địa bàn Phường' }}</strong></span>
+                        <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px; font-size: 11px;">
+                            Cập nhật: {{ $currentWeather['updated_at'] ?? now()->format('H:i - d/m/Y') }}
+                        </span>
+                    </div>
+                    @if($currentWeather)
+                        <div style="display: flex; align-items: center; gap: 16px; margin-top: 6px;">
+                            <div style="font-size: 40px; font-weight: 800; line-height: 1;">
+                                {{ $currentWeather['temp'] }}°C
+                            </div>
+                            <div>
+                                <div style="font-size: 16px; font-weight: 700;">{{ $currentWeather['condition_text'] }}</div>
+                                <div style="font-size: 12px; opacity: 0.85; margin-top: 2px;">Cảm giác như {{ $currentWeather['feels_like'] }}°C</div>
+                            </div>
+                        </div>
+                    @else
+                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 6px; background: rgba(239, 68, 68, 0.2); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.4);">
+                            <i class="ph ph-warning-circle" style="font-size: 20px; color: #FCA5A5;"></i>
+                            <span style="font-size: 13px; color: #FEF2F2; font-weight: 500;">
+                                Chưa nhận được dữ liệu từ API Open-Meteo (Hệ thống đã ghi thông báo vào Log).
+                            </span>
+                        </div>
+                    @endif
+                </div>
+
+                @if($currentWeather)
+                    <div style="display: flex; gap: 20px; background: rgba(255,255,255,0.15); padding: 12px 18px; border-radius: 10px; backdrop-filter: blur(4px);">
+                        <div style="text-align: center;">
+                            <div style="font-size: 11px; opacity: 0.85;"><i class="ph ph-drop"></i> Độ ẩm</div>
+                            <div style="font-size: 15px; font-weight: 700; margin-top: 2px;">{{ $currentWeather['humidity'] }}%</div>
+                        </div>
+                        <div style="text-align: center; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 16px;">
+                            <div style="font-size: 11px; opacity: 0.85;"><i class="ph ph-wind"></i> Tốc độ gió</div>
+                            <div style="font-size: 15px; font-weight: 700; margin-top: 2px;">{{ $currentWeather['wind_speed'] }} km/h</div>
+                        </div>
+                        <div style="text-align: center; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 16px;">
+                            <div style="font-size: 11px; opacity: 0.85;"><i class="ph ph-sun"></i> Chỉ số UV</div>
+                            <div style="font-size: 15px; font-weight: 700; margin-top: 2px;">{{ $currentWeather['uv_index'] }}/12</div>
+                        </div>
+                        <div style="text-align: center; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 16px;">
+                            <div style="font-size: 11px; opacity: 0.85;"><i class="ph ph-gauge"></i> Áp suất</div>
+                            <div style="font-size: 15px; font-weight: 700; margin-top: 2px;">{{ $currentWeather['pressure'] }} hPa</div>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
+
         <div class="weather-stats-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px;">
             <div class="gov-card" style="background: var(--surface); padding: 16px; border-radius: 8px; border: 1px solid var(--border); display: flex; align-items: center; gap: 12px;">
                 <div style="width: 40px; height: 40px; border-radius: 8px; background: #E8F0FE; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 20px;"><i class="ph ph-cloud-sun"></i></div>
