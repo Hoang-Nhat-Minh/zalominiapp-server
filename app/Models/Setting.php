@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 
 class Setting extends Model
@@ -20,10 +19,8 @@ class Setting extends Model
                 return $default;
             }
 
-            return Cache::remember("setting_{$key}", 86400, function () use ($key, $default) {
-                $setting = static::where('key', $key)->first();
-                return $setting && !is_null($setting->value) ? $setting->value : $default;
-            });
+            $setting = static::where('key', $key)->first();
+            return ($setting && !is_null($setting->value)) ? $setting->value : $default;
         } catch (\Exception $e) {
             return $default;
         }
@@ -34,10 +31,8 @@ class Setting extends Model
         try {
             if (Schema::hasTable('settings')) {
                 static::updateOrCreate(['key' => $key], ['value' => $value]);
-                Cache::forget("setting_{$key}");
             }
         } catch (\Exception $e) {
-            // Silently fail if table doesn't exist yet
         }
     }
 }

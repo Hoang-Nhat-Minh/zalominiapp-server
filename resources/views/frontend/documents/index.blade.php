@@ -162,11 +162,6 @@
                                         <input type="hidden" name="status" value="published">
                                         <button type="submit" class="documents-btn-icon documents-color-success" title="Xuất bản ngay"><i class="ph ph-upload-simple"></i></button>
                                     </form>
-                                    <form action="{{ route('documents.destroy', $doc->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa tài liệu này?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="documents-btn-icon documents-color-danger" title="Xóa"><i class="ph ph-trash"></i></button>
-                                    </form>
                                 @elseif($doc->status === 'published')
                                     <form action="{{ route('documents.updateStatus', $doc->id) }}" method="POST" style="display:inline;">
                                         @csrf
@@ -182,6 +177,12 @@
                                         <button type="submit" class="documents-btn-icon documents-color-success" title="Xuất bản lại"><i class="ph ph-arrow-counter-clockwise"></i></button>
                                     </form>
                                 @endif
+
+                                <form action="{{ route('documents.destroy', $doc->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa tài liệu này?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="documents-btn-icon documents-color-danger" title="Xóa tài liệu"><i class="ph ph-trash"></i></button>
+                                </form>
                             </div>
                         </td>
                     </tr>
@@ -270,6 +271,13 @@
                                         <button type="submit" class="documents-btn documents-btn-muted"><i class="ph ph-archive"></i> Chuyển vào lưu trữ</button>
                                     </form>
                                 @endif
+                                <form action="{{ route('documents.destroy', $doc->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa tài liệu này?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="documents-btn" style="background: #EF4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                                        <i class="ph ph-trash"></i> Xóa tài liệu
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>

@@ -72,7 +72,7 @@
                 <!-- Khối 2: Tọa độ & Thời tiết -->
                 <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px;">
                     <h2 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                        <i class="ph ph-cloud-sun" style="color: #F59E0B;"></i> Tọa độ Dự báo Thời tiết (Open-Meteo)
+                        <i class="ph ph-cloud-sun" style="color: #F59E0B;"></i> Tọa độ Dự báo Thời tiết
                     </h2>
 
                     <div style="margin-bottom: 16px;">
@@ -106,11 +106,6 @@
                             <button type="button" onclick="setCoords(16.0544, 108.2022, 'Đà Nẵng')" class="admin-btn" style="padding: 4px 10px; font-size: 12px; border-radius: 12px; background: #EBF1FF; color: #0057FF; border: none; font-weight: 600;">Đà Nẵng</button>
                             <button type="button" onclick="setCoords(10.8231, 106.6297, 'TP. Hồ Chí Minh')" class="admin-btn" style="padding: 4px 10px; font-size: 12px; border-radius: 12px; background: #EBF1FF; color: #0057FF; border: none; font-weight: 600;">TP. Hồ Chí Minh</button>
                         </div>
-                    </div>
-
-                    <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 14px; font-size: 13px; color: #166534; line-height: 1.5;">
-                        <i class="ph ph-info" style="font-size: 16px; vertical-align: middle;"></i> <strong>Thông tin API Open-Meteo:</strong><br>
-                        API Open-Meteo hoàn toàn <strong>Miễn phí</strong> (Cho phép tối đa 10.000 lượt gọi/ngày). Hệ thống còn được tích hợp cơ chế Cache 30 phút nên không sợ lo vượt hạn ngạch!
                     </div>
                 </div>
             </div>

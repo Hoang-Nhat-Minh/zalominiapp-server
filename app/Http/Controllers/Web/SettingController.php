@@ -37,15 +37,15 @@ class SettingController extends Controller
             'favicon.max'          => 'Kích thước file favicon tối đa 2MB',
         ]);
 
-        if ($request->filled('site_name')) {
-            Setting::set('site_name', $request->site_name);
+        if ($request->has('site_name')) {
+            Setting::set('site_name', $request->input('site_name'));
         }
 
-        Setting::set('weather_lat', $request->weather_lat);
-        Setting::set('weather_lng', $request->weather_lng);
+        Setting::set('weather_lat', $request->input('weather_lat'));
+        Setting::set('weather_lng', $request->input('weather_lng'));
 
-        if ($request->filled('weather_city')) {
-            Setting::set('weather_city', $request->weather_city);
+        if ($request->has('weather_city')) {
+            Setting::set('weather_city', $request->input('weather_city'));
         }
 
         if ($request->hasFile('favicon')) {
