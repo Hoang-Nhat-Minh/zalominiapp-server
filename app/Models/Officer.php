@@ -19,10 +19,12 @@ class Officer extends Authenticatable
         'phone',
         'status',
         'last_login_at',
+        'remember_token',
     ];
 
     protected $hidden = [
         'password',
+        'remember_token',
     ];
 
     protected $casts = [

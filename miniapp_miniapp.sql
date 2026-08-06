@@ -177,6 +177,7 @@ CREATE TABLE `officers` (
   `name` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `password` text NOT NULL,
+  `remember_token` varchar(100) DEFAULT NULL,
   `department_id` int(11) NOT NULL,
   `phone` varchar(255) NOT NULL,
   `status` varchar(255) NOT NULL,
