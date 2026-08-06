@@ -45,6 +45,9 @@ Route::middleware('auth:officer')->group(function () {
     Route::get('/',                 [DashboardController::class,  'index'])->name('dashboard');
     Route::get('/dashboard/export', [DashboardController::class,  'export'])->name('dashboard.export');
     Route::get('/appointments',     [AppointmentController::class,'index'])->name('appointments');
+    Route::post('/appointments',    [AppointmentController::class,'store'])->name('appointments.store');
+    Route::patch('/appointments/{appointment}/status', [AppointmentController::class,'updateStatus'])->name('appointments.updateStatus');
+    Route::delete('/appointments/{appointment}',[AppointmentController::class,'destroy'])->name('appointments.destroy');
     Route::get('/profiles',         [ProfileController::class,    'index'])->name('profiles');
     Route::get('/profiles/export',  [ProfileController::class,    'export'])->name('profiles.export');
     Route::get('/reports',          [ReportController::class,     'index'])->name('reports');

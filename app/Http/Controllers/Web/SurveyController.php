@@ -87,7 +87,85 @@ class SurveyController extends Controller
         $survey->load(['questions', 'responses.user']);
         $totalResponses = $survey->responses->count();
 
-        return view('frontend.surveys.show', compact('survey', 'totalResponses'));
+        // Process statistics per question from actual database responses
+        $questionsData = $survey->questions->map(function ($q, $qIndex) use ($survey, $totalResponses) {
+            $optionCounts = [];
+            $ratingSum = 0;
+            $ratingCount = 0;
+            $textAnswers = [];
+
+            if (in_array($q->type, ['single_choice', 'multiple_choice'])) {
+                $options = is_array($q->options) ? $q->options : [];
+                foreach ($options as $opt) {
+                    $optionCounts[$opt] = 0;
+                }
+            }
+
+            foreach ($survey->responses as $response) {
+                $answers = $response->answers;
+                $val = null;
+
+                if (is_array($answers)) {
+                    if (array_key_exists($q->id, $answers)) {
+                        $val = $answers[$q->id];
+                    } elseif (array_key_exists("q_{$q->id}", $answers)) {
+                        $val = $answers["q_{$q->id}"];
+                    } elseif (array_key_exists($qIndex, $answers)) {
+                        $val = $answers[$qIndex];
+                    } else {
+                        foreach ($answers as $item) {
+                            if (is_array($item) && isset($item['question_id']) && $item['question_id'] == $q->id) {
+                                $val = $item['answer'] ?? $item['value'] ?? null;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if ($val === null || $val === '') {
+                    continue;
+                }
+
+                if (in_array($q->type, ['single_choice', 'multiple_choice'])) {
+                    $valArray = is_array($val) ? $val : array_map('trim', explode(',', (string)$val));
+                    foreach ($valArray as $selectedOpt) {
+                        if (isset($optionCounts[$selectedOpt])) {
+                            $optionCounts[$selectedOpt]++;
+                        } else {
+                            foreach ($optionCounts as $optKey => $cnt) {
+                                if (trim($optKey) === trim($selectedOpt)) {
+                                    $optionCounts[$optKey]++;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                } elseif ($q->type === 'rating') {
+                    if (is_numeric($val)) {
+                        $ratingSum += (float)$val;
+                        $ratingCount++;
+                    }
+                } elseif ($q->type === 'text') {
+                    $textAnswers[] = [
+                        'user_name'    => $response->user->full_name ?? ($response->user->name ?? 'Công dân'),
+                        'text'         => is_array($val) ? implode(', ', $val) : (string)$val,
+                        'submitted_at' => $response->submitted_at ? $response->submitted_at->format('H:i d/m/Y') : $response->created_at->format('H:i d/m/Y'),
+                    ];
+                }
+            }
+
+            $avgRating = $ratingCount > 0 ? round($ratingSum / $ratingCount, 1) : 0;
+
+            return [
+                'question'      => $q,
+                'option_counts' => $optionCounts,
+                'rating_avg'    => $avgRating,
+                'rating_count'  => $ratingCount,
+                'text_answers'  => $textAnswers,
+            ];
+        });
+
+        return view('frontend.surveys.show', compact('survey', 'totalResponses', 'questionsData'));
     }
 
     public function destroy(Survey $survey)

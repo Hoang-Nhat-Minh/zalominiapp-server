@@ -38,7 +38,10 @@
             <h2 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 20px;">Nội dung câu hỏi & Tổng hợp phản hồi</h2>
 
             <div style="display: flex; flex-direction: column; gap: 24px;">
-                @foreach($survey->questions as $qIndex => $q)
+                @foreach($questionsData as $qIndex => $data)
+                    @php
+                        $q = $data['question'];
+                    @endphp
                     <div style="background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px; padding: 16px;">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                             <h3 style="font-size: 15px; font-weight: 700; color: var(--text-main); margin: 0;">
@@ -53,22 +56,64 @@
                             </span>
                         </div>
 
-                        @if(in_array($q->type, ['single_choice', 'multiple_choice']) && !empty($q->options))
-                            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
-                                @foreach($q->options as $opt)
-                                    <div style="display: flex; align-items: center; justify-content: space-between; background: white; padding: 10px 14px; border-radius: 6px; border: 1px solid #e2e8f0;">
-                                        <span style="font-size: 14px; font-weight: 600; color: #374151;">{{ $opt }}</span>
-                                        <span style="font-size: 13px; font-weight: 700; color: #0057FF;">Ý kiến dân cư</span>
+                        @if(in_array($q->type, ['single_choice', 'multiple_choice']))
+                            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+                                @forelse($data['option_counts'] as $opt => $count)
+                                    @php
+                                        $percent = $totalResponses > 0 ? round(($count / $totalResponses) * 100, 1) : 0;
+                                    @endphp
+                                    <div style="background: white; padding: 12px 14px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                                            <span style="font-size: 14px; font-weight: 600; color: #374151;">{{ $opt }}</span>
+                                            <span style="font-size: 13px; font-weight: 700; color: #0057FF;">
+                                                {{ $count }} phiếu ({{ $percent }}%)
+                                            </span>
+                                        </div>
+                                        <div style="width: 100%; height: 8px; background: #E2E8F0; border-radius: 4px; overflow: hidden;">
+                                            <div style="height: 100%; width: {{ $percent }}%; background: #0057FF; border-radius: 4px; transition: width 0.3s ease;"></div>
+                                        </div>
                                     </div>
-                                @endforeach
+                                @empty
+                                    <div style="font-size: 13px; color: var(--text-muted); font-style: italic;">Chưa có tùy chọn nào.</div>
+                                @endforelse
                             </div>
                         @elseif($q->type === 'rating')
-                            <div style="display: flex; gap: 8px; margin-top: 12px; font-size: 20px; color: #FFB800;">
-                                ★ ★ ★ ★ ★ <span style="font-size: 14px; color: #374151; font-weight: 600; margin-left: 8px;">Mức độ hài lòng chung: 4.8 / 5.0</span>
+                            <div style="display: flex; align-items: center; gap: 12px; margin-top: 12px; background: white; padding: 14px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                <div style="font-size: 24px; color: #FFB800;">
+                                    ★ ★ ★ ★ ★
+                                </div>
+                                <div>
+                                    <div style="font-size: 16px; font-weight: 700; color: #1E293B;">
+                                        Mức độ hài lòng trung bình: {{ $data['rating_avg'] }} / 5.0
+                                    </div>
+                                    <div style="font-size: 12px; color: var(--text-muted);">
+                                        Dựa trên {{ $data['rating_count'] }} lượt đánh giá thực tế
+                                    </div>
+                                </div>
                             </div>
                         @else
-                            <div style="font-size: 13px; color: var(--text-muted); font-style: italic; margin-top: 8px;">
-                                Các ý kiến đóng góp tự luận sẽ được tổng hợp chi tiết theo danh sách phiếu trả lời bên dưới.
+                            <div style="margin-top: 12px;">
+                                @if(count($data['text_answers']) > 0)
+                                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                                        @foreach($data['text_answers'] as $tAns)
+                                            <div style="background: white; border: 1px solid #e2e8f0; padding: 12px 14px; border-radius: 6px;">
+                                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                                    <span style="font-weight: 600; font-size: 13px; color: var(--primary);">
+                                                        <i class="ph ph-user"></i> {{ $tAns['user_name'] }}
+                                                    </span>
+                                                    <span style="color: var(--text-muted); font-size: 12px;">{{ $tAns['submitted_at'] }}</span>
+                                                </div>
+                                                <div style="font-size: 14px; color: #374151; font-style: italic;">
+                                                    "{{ $tAns['text'] }}"
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <div style="font-size: 13px; color: var(--text-muted); font-style: italic; background: white; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                        Chưa có ý kiến tự luận nào được gửi cho câu hỏi này.
+                                    </div>
+                                @endif
                             </div>
                         @endif
                     </div>
@@ -85,10 +130,11 @@
                 <thead>
                     <tr style="background: var(--background); border-bottom: 1px solid var(--border);">
                         <th width="5%" style="padding: 12px 16px; font-weight: 600; color: var(--text-main);">STT</th>
-                        <th width="25%" style="padding: 12px 16px; font-weight: 600; color: var(--text-main);">Họ và tên công dân</th>
-                        <th width="20%" style="padding: 12px 16px; font-weight: 600; color: var(--text-main);">Số điện thoại / CCCD</th>
-                        <th width="30%" style="padding: 12px 16px; font-weight: 600; color: var(--text-main);">Địa chỉ / Tổ dân phố</th>
-                        <th width="20%" style="padding: 12px 16px; font-weight: 600; color: var(--text-main);">Thời gian hoàn thành</th>
+                        <th width="20%" style="padding: 12px 16px; font-weight: 600; color: var(--text-main);">Họ và tên công dân</th>
+                        <th width="15%" style="padding: 12px 16px; font-weight: 600; color: var(--text-main);">Số điện thoại</th>
+                        <th width="25%" style="padding: 12px 16px; font-weight: 600; color: var(--text-main);">Tổ dân phố</th>
+                        <th width="15%" style="padding: 12px 16px; font-weight: 600; color: var(--text-main);">Thời gian gửi</th>
+                        <th width="20%" style="padding: 12px 16px; font-weight: 600; color: var(--text-main);">Nội dung phiếu</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -96,21 +142,38 @@
                         <tr style="border-bottom: 1px solid var(--border);">
                             <td style="padding: 12px 16px; font-size: 14px;">{{ $rIndex + 1 }}</td>
                             <td style="padding: 12px 16px; font-weight: 600; color: var(--text-main); font-size: 14px;">
-                                {{ $res->user->full_name ?? 'Công dân Phường' }}
+                                {{ $res->user->full_name ?? ($res->user->name ?? 'Công dân Phường') }}
                             </td>
                             <td style="padding: 12px 16px; font-size: 13px; color: var(--text-muted);">
                                 {{ $res->user->phone ?? '0912.***.***' }}
                             </td>
                             <td style="padding: 12px 16px; font-size: 13px; color: var(--text-main);">
-                                {{ $res->user->address ?? 'Phường' }}
+                                {{ $res->user->tdp ?? ($res->user->address ?? 'Toàn phường') }}
                             </td>
                             <td style="padding: 12px 16px; font-size: 13px; color: var(--text-muted);">
-                                {{ $res->submitted_at ? $res->submitted_at->format('H:i:s d/m/Y') : $res->created_at->format('H:i d/m/Y') }}
+                                {{ $res->submitted_at ? $res->submitted_at->format('H:i d/m/Y') : $res->created_at->format('H:i d/m/Y') }}
+                            </td>
+                            <td style="padding: 12px 16px; font-size: 13px;">
+                                <details>
+                                    <summary style="cursor: pointer; color: #0057FF; font-weight: 600;">Xem câu trả lời</summary>
+                                    <div style="margin-top: 8px; padding: 10px; background: #F8FAFC; border-radius: 6px; font-size: 12px;">
+                                        @if(is_array($res->answers) && count($res->answers) > 0)
+                                            @foreach($res->answers as $ansKey => $ansVal)
+                                                <div style="margin-bottom: 6px;">
+                                                    <span style="font-weight: 600; color: #333;">Câu/Mục {{ $ansKey }}:</span>
+                                                    <span style="color: #555;">{{ is_array($ansVal) ? implode(', ', $ansVal) : $ansVal }}</span>
+                                                </div>
+                                            @endforeach
+                                        @else
+                                            <span style="color: #999;">Trống</span>
+                                        @endif
+                                    </div>
+                                </details>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" style="padding: 30px; text-align: center; color: var(--text-muted);">
+                            <td colspan="6" style="padding: 30px; text-align: center; color: var(--text-muted);">
                                 Chưa có công dân nào hoàn thành bài khảo sát này.
                             </td>
                         </tr>
