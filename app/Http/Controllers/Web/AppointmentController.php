@@ -17,11 +17,10 @@ class AppointmentController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($u) use ($search) {
-                      $u->where('full_name', 'like', "%{$search}%")
-                        ->orWhere('name', 'like', "%{$search}%")
-                        ->orWhere('phone', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('user', function ($u) use ($search) {
+                        $u->where('full_name', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -47,7 +46,7 @@ class AppointmentController extends Controller
             'cancelled' => Appointment::where('status', 'cancelled')->count()
         ];
 
-        $users = User::select('id', 'full_name', 'name', 'phone')->latest()->limit(200)->get();
+        $users = User::select('id', 'full_name', 'phone')->latest()->limit(200)->get();
 
         return view('frontend.appointments.index', compact('appointments', 'stats', 'users'));
     }

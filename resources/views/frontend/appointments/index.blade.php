@@ -311,7 +311,7 @@
                             <select name="user_id" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 14px; background: white;">
                                 <option value="">-- Chọn công dân --</option>
                                 @foreach($users as $u)
-                                    <option value="{{ $u->id }}">{{ $u->full_name ?? $u->name }} ({{ $u->phone ?? 'Không SĐT' }})</option>
+                                    <option value="{{ $u->id }}">{{ $u->full_name ?? 'Công dân' }} ({{ $u->phone ?? 'Không SĐT' }})</option>
                                 @endforeach
                             </select>
                         </div>
