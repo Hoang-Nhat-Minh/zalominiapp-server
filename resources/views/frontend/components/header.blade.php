@@ -6,7 +6,8 @@
 
         <div class="admin-search-bar">
             <div style="position: relative;">
-                <i class="ph ph-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                <i class="ph ph-magnifying-glass"
+                    style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
                 <input type="text" placeholder="Tìm kiếm nhanh..." style="padding-left: 36px;">
             </div>
         </div>
@@ -90,23 +91,57 @@
             </div>
         </div>
 
+        @php
+            $currentOfficer = Auth::guard('officer')->user() ?: Auth::user();
+
+            $officerName = $currentOfficer ? $currentOfficer->name : 'Cán bộ Tiếp dân';
+
+            if ($currentOfficer && !empty($currentOfficer->role)) {
+                $officerRole = match ($currentOfficer->role) {
+                    'admin' => 'Quản trị viên',
+                    'officer' => 'Cán bộ Tiếp dân',
+                    default => 'Cán bộ Tiếp dân',
+                };
+            } else {
+                $officerRole = 'Cán bộ Tiếp dân';
+            }
+
+            if ($currentOfficer && !empty($currentOfficer->department_id)) {
+                $officerDept = 'Phòng/Ban #' . $currentOfficer->department_id;
+            } else {
+                $officerDept = 'Phòng Hành chính';
+            }
+
+            $avatarText = 'CB';
+            if ($currentOfficer && !empty($currentOfficer->name)) {
+                $words = array_values(array_filter(explode(' ', trim($currentOfficer->name))));
+                if (count($words) >= 2) {
+                    $first = mb_substr($words[0], 0, 1, 'UTF-8');
+                    $last = mb_substr($words[count($words) - 1], 0, 1, 'UTF-8');
+                    $avatarText = mb_strtoupper($first . $last, 'UTF-8');
+                } elseif (count($words) == 1) {
+                    $avatarText = mb_strtoupper(mb_substr($words[0], 0, 2, 'UTF-8'), 'UTF-8');
+                }
+            }
+        @endphp
+
         <div class="admin-dropdown-wrap">
             <div class="admin-user-profile admin-dropdown-trigger" data-target="profileMenu">
-                <div class="admin-avatar">CB</div>
+                <div class="admin-avatar">{{ $avatarText }}</div>
                 <div class="admin-user-info">
-                    <span class="admin-user-name">Cán bộ Tiếp dân</span>
-                    <span class="admin-user-role">Phòng Hành chính</span>
+                    <span class="admin-user-name">{{ $officerName }}</span>
+                    <span class="admin-user-role">{{ $officerRole }}</span>
                 </div>
                 <i class="ph ph-caret-down admin-profile-caret"></i>
             </div>
 
             <div class="admin-dropdown-menu admin-profile-menu" id="profileMenu">
                 <div class="admin-profile-header">
-                    <div class="admin-avatar admin-avatar-lg">CB</div>
+                    <div class="admin-avatar admin-avatar-lg">{{ $avatarText }}</div>
                     <div class="admin-profile-header-info">
-                        <strong>Nguyễn Văn Tiếp</strong>
-                        <span>Cán bộ Tiếp dân</span>
-                        <span class="admin-profile-dept">Phòng Hành chính</span>
+                        <strong>{{ $officerName }}</strong>
+                        <span>{{ $officerRole }}</span>
+                        <span class="admin-profile-dept">{{ $officerDept }}</span>
                     </div>
                 </div>
                 <ul class="admin-profile-list">
@@ -120,7 +155,8 @@
                         <form action="{{ route('logout') }}" method="POST" id="logout-form" style="display: none;">
                             @csrf
                         </form>
-                        <a href="{{ route('logout') }}" class="admin-profile-item admin-profile-logout" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                        <a href="{{ route('logout') }}" class="admin-profile-item admin-profile-logout"
+                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                             <i class="ph ph-sign-out"></i> Đăng xuất
                         </a>
                     </li>
