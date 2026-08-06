@@ -111,28 +111,16 @@
                 </div>
                 <ul class="admin-profile-list">
                     <li>
-                        <a href="#" class="admin-profile-item">
+                        <a href="{{ route('officer.profile') }}" class="admin-profile-item">
                             <i class="ph ph-user-circle"></i> Hồ sơ cá nhân
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="admin-profile-item">
-                            <i class="ph ph-lock-key"></i> Đổi mật khẩu
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="admin-profile-item">
-                            <i class="ph ph-gear"></i> Cài đặt tài khoản
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="admin-profile-item">
-                            <i class="ph ph-clock-counter-clockwise"></i> Nhật ký đăng nhập
                         </a>
                     </li>
                     <li class="admin-profile-separator"></li>
                     <li>
-                        <a href="#" class="admin-profile-item admin-profile-logout">
+                        <form action="{{ route('logout') }}" method="POST" id="logout-form" style="display: none;">
+                            @csrf
+                        </form>
+                        <a href="{{ route('logout') }}" class="admin-profile-item admin-profile-logout" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                             <i class="ph ph-sign-out"></i> Đăng xuất
                         </a>
                     </li>

@@ -27,7 +27,7 @@
                 <div>
                     <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; opacity: 0.9; font-weight: 500; margin-bottom: 6px;">
                         <i class="ph ph-map-pin" style="font-size: 16px;"></i>
-                        <span>Thời tiết thời gian thực: <strong>{{ $currentWeather['location_name'] ?? 'Địa bàn Phường' }}</strong></span>
+                        <span>Thời tiết thời gian thực tại: <strong style="font-size: 15px; font-weight: 700;">{{ $location ?? ($weatherData['location'] ?? 'Hà Nội') }}</strong></span>
                         <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px; font-size: 11px;">
                             Cập nhật: {{ $currentWeather['updated_at'] ?? now()->format('H:i - d/m/Y') }}
                         </span>
@@ -46,7 +46,7 @@
                         <div style="display: flex; align-items: center; gap: 8px; margin-top: 6px; background: rgba(239, 68, 68, 0.2); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.4);">
                             <i class="ph ph-warning-circle" style="font-size: 20px; color: #FCA5A5;"></i>
                             <span style="font-size: 13px; color: #FEF2F2; font-weight: 500;">
-                                Chưa nhận được dữ liệu từ API Open-Meteo (Hệ thống đã ghi thông báo vào Log).
+                                Chưa nhận được dữ liệu thời tiết trực tuyến (Hệ thống đã ghi thông báo vào Log).
                             </span>
                         </div>
                     @endif

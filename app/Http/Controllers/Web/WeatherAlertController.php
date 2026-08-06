@@ -43,11 +43,11 @@ class WeatherAlertController extends Controller
             'active'  => WeatherAlert::where('is_active', true)->count(),
         ];
 
-        // Lấy dữ liệu thời tiết thực tế từ Open-Meteo API qua WeatherService
         $weatherData = $this->weatherService->getWeather();
         $currentWeather = $weatherData['current'] ?? null;
+        $location = \App\Models\Setting::get('weather_city', 'Hà Nội');
 
-        return view('frontend.weather.index', compact('alerts', 'stats', 'currentWeather', 'weatherData'));
+        return view('frontend.weather.index', compact('alerts', 'stats', 'currentWeather', 'weatherData', 'location'));
     }
 
     public function create()

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class AuthController extends Controller
@@ -23,11 +24,7 @@ class AuthController extends Controller
     {
         $credentials = $request->validate([
             'email'    => ['required', 'email'],
-            'password' => ['required', 'string'],
-        ], [
-            'email.required'    => 'Vui lòng nhập email.',
-            'email.email'       => 'Email không hợp lệ.',
-            'password.required' => 'Vui lòng nhập mật khẩu.',
+            'password' => ['required'],
         ]);
 
         $remember = $request->boolean('remember');
@@ -38,15 +35,11 @@ class AuthController extends Controller
             /** @var \App\Models\Officer $officer */
             $officer = Auth::guard('officer')->user();
 
-            // Chặn tài khoản bị vô hiệu hóa
             if ($officer->status !== 'active') {
                 Auth::guard('officer')->logout();
-
-                return back()
-                    ->withInput($request->only('email', 'remember'))
-                    ->withErrors([
-                        'email' => 'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.',
-                    ]);
+                return back()->withErrors([
+                    'email' => 'Tài khoản cán bộ này đã bị vô hiệu hóa.',
+                ]);
             }
 
             // Cập nhật thời gian đăng nhập cuối
@@ -62,13 +55,56 @@ class AuthController extends Controller
             ]);
     }
 
+    public function profile()
+    {
+        $officer = Auth::guard('officer')->user() ?: Auth::user();
+        return view('frontend.officers.profile', compact('officer'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $officer = Auth::guard('officer')->user() ?: Auth::user();
+
+        $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|max:255|unique:officers,email,' . $officer->id,
+            'phone'    => 'nullable|string|max:20',
+            'password' => 'nullable|string|min:6|confirmed',
+        ], [
+            'name.required'      => 'Vui lòng nhập họ và tên',
+            'email.required'     => 'Vui lòng nhập địa chỉ email',
+            'email.unique'       => 'Email này đã được sử dụng trên hệ thống',
+            'password.min'       => 'Mật khẩu mới phải có ít nhất 6 ký tự',
+            'password.confirmed' => 'Xác nhận mật khẩu mới không khớp',
+        ]);
+
+        $updateData = [
+            'name'  => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+        ];
+
+        if ($request->filled('password')) {
+            $updateData['password'] = Hash::make($request->password);
+        }
+
+        $officer->update($updateData);
+
+        return redirect()->back()->with('success', 'Cập nhật thông tin hồ sơ cá nhân thành công!');
+    }
+
     public function logout(Request $request): RedirectResponse
     {
-        Auth::guard('officer')->logout();
+        if (Auth::guard('officer')->check()) {
+            Auth::guard('officer')->logout();
+        }
+        if (Auth::check()) {
+            Auth::logout();
+        }
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login');
+        return redirect()->route('login')->with('success', 'Bạn đã đăng xuất khỏi hệ thống thành công!');
     }
 }

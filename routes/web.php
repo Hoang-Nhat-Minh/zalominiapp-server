@@ -42,6 +42,10 @@ Route::middleware('guest:officer')->group(function () {
 /* ---------- Authenticated ---------- */
 Route::middleware('auth:officer')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/logout',  [AuthController::class, 'logout']);
+
+    Route::get('/officer/profile',  [AuthController::class, 'profile'])->name('officer.profile');
+    Route::post('/officer/profile', [AuthController::class, 'updateProfile'])->name('officer.profile.update');
 
     Route::get('/',                 [DashboardController::class,  'index'])->name('dashboard');
     Route::get('/dashboard/export', [DashboardController::class,  'export'])->name('dashboard.export');
