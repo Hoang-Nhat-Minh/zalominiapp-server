@@ -4,12 +4,30 @@
 
 @section('content')
     <main class="admin-content-wrapper notifications-wrapper">
+        @if(session('success'))
+            <div style="background: #DEF7EC; color: #03543F; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: 500; display: flex; align-items: center; justify-content: space-between;">
+                <span><i class="ph ph-check-circle" style="font-size: 18px; vertical-align: middle; margin-right: 6px;"></i> {{ session('success') }}</span>
+            </div>
+        @endif
+
+        @if($errors->any())
+            <div style="background: #FDE8E8; color: #9B1C1C; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: 500;">
+                <ul style="margin: 0; padding-left: 20px;">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <div class="notifications-header">
             <div class="notifications-header-info">
                 <h1 class="notifications-title">Thông báo công dân</h1>
                 <p class="notifications-subtitle">Quản lý và phát hành các thông báo, cảnh báo xuống ứng dụng di động của người dân.</p>
             </div>
-            <button class="notifications-btn notifications-btn-primary"><i class="ph ph-paper-plane-tilt"></i> Tạo thông báo</button>
+            <button class="notifications-btn notifications-btn-primary" onclick="toggleNotificationModal('modal-create-notification')">
+                <i class="ph ph-paper-plane-tilt"></i> Tạo thông báo
+            </button>
         </div>
 
         <div class="notifications-stats-grid">
@@ -51,21 +69,28 @@
         </div>
 
         <div class="notifications-filter-bar">
-            <div class="notifications-filter-group">
-                <div class="notifications-search">
-                    <i class="ph ph-magnifying-glass"></i>
-                    <input type="text" placeholder="Tìm kiếm theo tiêu đề thông báo...">
+            <form action="{{ route('notifications') }}" method="GET" style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 16px; flex-wrap: wrap;">
+                <div class="notifications-filter-group" style="flex: 1; flex-wrap: wrap;">
+                    <div class="notifications-search">
+                        <i class="ph ph-magnifying-glass"></i>
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Tìm kiếm theo tiêu đề thông báo...">
+                    </div>
+                    <select class="notifications-select" name="type">
+                        <option value="">Tất cả phân loại</option>
+                        <option value="emergency" {{ request('type') == 'emergency' ? 'selected' : '' }}>Khẩn cấp</option>
+                        <option value="government" {{ request('type') == 'government' ? 'selected' : '' }}>Chính quyền</option>
+                        <option value="utility" {{ request('type') == 'utility' ? 'selected' : '' }}>Tiện ích công</option>
+                        <option value="community" {{ request('type') == 'community' ? 'selected' : '' }}>Cộng đồng</option>
+                    </select>
+                    <input type="date" class="notifications-select" name="date" value="{{ request('date') }}" title="Lọc theo ngày gửi">
                 </div>
-                <select class="notifications-select">
-                    <option value="">Tất cả phân loại</option>
-                    <option value="emergency">Khẩn cấp</option>
-                    <option value="government">Chính quyền</option>
-                    <option value="utility">Tiện ích công</option>
-                    <option value="community">Cộng đồng</option>
-                </select>
-                <input type="date" class="notifications-select" title="Lọc theo ngày gửi">
-            </div>
-            <button class="notifications-btn notifications-btn-outline"><i class="ph ph-funnel"></i> Lọc kết quả</button>
+                <div style="display: flex; gap: 8px;">
+                    <button type="submit" class="notifications-btn notifications-btn-outline"><i class="ph ph-funnel"></i> Lọc kết quả</button>
+                    @if(request()->hasAny(['search', 'type', 'date']))
+                        <a href="{{ route('notifications') }}" class="notifications-btn" style="background: #e0e0e0; color: #333; text-decoration: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; font-size: 14px;">Bỏ lọc</a>
+                    @endif
+                </div>
+            </form>
         </div>
 
         <div class="notifications-table-wrapper">
@@ -75,7 +100,7 @@
                     <th width="5%">STT</th>
                     <th width="25%">Tiêu đề</th>
                     <th width="15%">Phân loại</th>
-                    <th width="20%">Nội dung tóm tắt</th>
+                    <th width="25%">Nội dung tóm tắt</th>
                     <th width="15%">Thời gian gửi</th>
                     <th width="10%">Trạng thái</th>
                     <th width="10%" class="notifications-text-center">Thao tác</th>
@@ -88,7 +113,7 @@
                         $statusConfig = $notify->status_config;
                     @endphp
                     <tr>
-                        <td class="notifications-text-center">{{ $index + 1 }}</td>
+                        <td class="notifications-text-center">{{ $notifications->firstItem() + $index }}</td>
                         <td>
                             <div class="notifications-title-truncate notifications-fw-600" title="{{ $notify->title }}">{{ $notify->title }}</div>
                             <div class="notifications-text-small notifications-text-muted">Tạo lúc: {{ date('d/m/Y H:i', strtotime($notify->created_at)) }}</div>
@@ -109,7 +134,7 @@
                                     <span class="notifications-time"><i class="ph ph-clock"></i> {{ date('H:i', strtotime($notify->sent_at)) }}</span>
                                 </div>
                             @else
-                                <span class="notifications-text-muted notifications-text-small">- Chưa xác định -</span>
+                                <span class="notifications-text-muted notifications-text-small">- Chưa gửi -</span>
                             @endif
                         </td>
                         <td>
@@ -119,16 +144,16 @@
                         </td>
                         <td class="notifications-text-center">
                             <div class="notifications-actions">
-                                @if($notify->status === 'draft')
-                                    <button class="notifications-btn-icon notifications-color-primary" title="Chỉnh sửa"><i class="ph ph-pencil-simple"></i></button>
-                                    <button class="notifications-btn-icon notifications-color-success" title="Gửi thông báo"><i class="ph ph-paper-plane-right"></i></button>
-                                    <button class="notifications-btn-icon notifications-color-danger" title="Xóa"><i class="ph ph-trash"></i></button>
-                                @elseif($notify->status === 'scheduled')
-                                    <button class="notifications-btn-icon notifications-color-primary" title="Chỉnh sửa"><i class="ph ph-pencil-simple"></i></button>
-                                    <button class="notifications-btn-icon notifications-color-danger" title="Hủy lịch gửi"><i class="ph ph-x-circle"></i></button>
-                                @elseif($notify->status === 'sent')
-                                    <button class="notifications-btn-icon notifications-color-info" title="Xem chi tiết" onclick="toggleNotificationModal('modal-notify-{{ $notify->id }}')"><i class="ph ph-eye"></i></button>
-                                @endif
+                                <button class="notifications-btn-icon notifications-color-info" title="Xem chi tiết" onclick="toggleNotificationModal('modal-notify-{{ $notify->id }}')">
+                                    <i class="ph ph-eye"></i>
+                                </button>
+                                <form action="{{ route('notifications.destroy', $notify->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa thông báo này?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="notifications-btn-icon notifications-color-danger" title="Xóa thông báo">
+                                        <i class="ph ph-trash"></i>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
@@ -137,7 +162,7 @@
                         <div class="notifications-modal-overlay" onclick="toggleNotificationModal('modal-notify-{{ $notify->id }}')"></div>
                         <div class="notifications-modal-content">
                             <div class="notifications-modal-header">
-                                <h3 class="notifications-modal-title">Chi tiết thông báo</h3>
+                                <h3 class="notifications-modal-title">Chi tiết thông báo #{{ $notify->id }}</h3>
                                 <button class="notifications-modal-close" onclick="toggleNotificationModal('modal-notify-{{ $notify->id }}')"><i class="ph ph-x"></i></button>
                             </div>
 
@@ -160,11 +185,11 @@
                                             </span>
                                         </div>
                                         <div class="notifications-meta-item">
-                                            <label>Tạo lúc</label>
+                                            <label>Thời gian tạo</label>
                                             <span><i class="ph ph-clock"></i> {{ date('d/m/Y H:i', strtotime($notify->created_at)) }}</span>
                                         </div>
                                         <div class="notifications-meta-item">
-                                            <label>Gửi lúc</label>
+                                            <label>Thời gian phát hành</label>
                                             <span>
                                                 @if($notify->sent_at)
                                                     <i class="ph ph-paper-plane-right"></i> {{ date('d/m/Y H:i', strtotime($notify->sent_at)) }}
@@ -175,45 +200,14 @@
                                         </div>
                                     </div>
 
-                                    <div class="notifications-full-content">
+                                    <div class="notifications-full-content" style="margin-top: 16px; background: #F8FAFC; border: 1px solid var(--border); border-radius: 6px; padding: 16px; line-height: 1.6; font-size: 14px; color: #334155;">
                                         {!! nl2br(e($notify->content)) !!}
                                     </div>
                                 </div>
-
-                                @if($notify->status === 'sent')
-                                    <h4 class="notifications-section-title">Thống kê tương tác</h4>
-                                    <div class="notifications-tracking-grid">
-                                        <div class="notifications-tracking-card">
-                                            <div class="notifications-tracking-val">{{ number_format($notify->read_stats->total, 0, ',', '.') }}</div>
-                                            <div class="notifications-tracking-lbl">Tổng người nhận</div>
-                                        </div>
-                                        <div class="notifications-tracking-card notifications-tracking-read">
-                                            <div class="notifications-tracking-val">{{ number_format($notify->read_stats->read, 0, ',', '.') }}</div>
-                                            <div class="notifications-tracking-lbl">Đã đọc</div>
-                                        </div>
-                                        <div class="notifications-tracking-card notifications-tracking-unread">
-                                            <div class="notifications-tracking-val">{{ number_format($notify->read_stats->unread, 0, ',', '.') }}</div>
-                                            <div class="notifications-tracking-lbl">Chưa đọc</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="notifications-progress-container">
-                                        <div class="notifications-progress-header">
-                                            <span class="notifications-progress-lbl">Tỷ lệ chuyển đổi đọc</span>
-                                            <span class="notifications-progress-pct">{{ $notify->read_stats->rate }}%</span>
-                                        </div>
-                                        <div class="notifications-progress-bar">
-                                            <div class="notifications-progress-fill" style="width: {{ $notify->read_stats->rate }}%"></div>
-                                        </div>
-                                    </div>
-                                @endif
                             </div>
 
                             <div class="notifications-modal-footer">
                                 <button class="notifications-btn notifications-btn-outline" onclick="toggleNotificationModal('modal-notify-{{ $notify->id }}')">Đóng</button>
-                                @if($notify->status === 'sent')
-                                    <button class="notifications-btn notifications-btn-primary"><i class="ph ph-export"></i> Xuất danh sách</button>
-                                @endif
                             </div>
                         </div>
                     </div>
@@ -232,6 +226,47 @@
 
             <div class="pagination-wrapper">
                  {{ $notifications->links('frontend.components.pagination') }}
+            </div>
+        </div>
+
+        <!-- Modal Tạo Mới Thông Báo -->
+        <div class="notifications-modal" id="modal-create-notification">
+            <div class="notifications-modal-overlay" onclick="toggleNotificationModal('modal-create-notification')"></div>
+            <div class="notifications-modal-content" style="max-width: 600px;">
+                <div class="notifications-modal-header">
+                    <h3 class="notifications-modal-title">Tạo mới thông báo xuống ứng dụng công dân</h3>
+                    <button class="notifications-modal-close" onclick="toggleNotificationModal('modal-create-notification')"><i class="ph ph-x"></i></button>
+                </div>
+                <form action="{{ route('notifications.store') }}" method="POST">
+                    @csrf
+                    <div class="notifications-modal-body" style="display: flex; flex-direction: column; gap: 16px;">
+                        <div>
+                            <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--text-main);">Tiêu đề thông báo <span style="color:red;">*</span></label>
+                            <input type="text" name="title" required placeholder="Nhập tiêu đề thông báo..." style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 14px;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--text-main);">Phân loại thông báo <span style="color:red;">*</span></label>
+                            <select name="type" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 14px; background: white;">
+                                <option value="government">Chính quyền (Thông báo hành chính, chỉ thị)</option>
+                                <option value="emergency">Khẩn cấp (Cảnh báo thiên tai, sự cố)</option>
+                                <option value="utility">Tiện ích công (Lịch cắt điện, nước, sửa chữa)</option>
+                                <option value="community">Cộng đồng (Sinh hoạt TDP, hoạt động chung)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--text-main);">Nội dung chi tiết thông báo <span style="color:red;">*</span></label>
+                            <textarea name="content" rows="5" required placeholder="Nhập chi tiết nội dung thông báo phát hành tới công dân..." style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 14px;"></textarea>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" name="send_now" id="send_now" value="1" checked style="width: 16px; height: 16px;">
+                            <label for="send_now" style="font-size: 14px; font-weight: 500; color: var(--text-main); cursor: pointer;">Phát hành ngay lập tức tới ứng dụng di động công dân</label>
+                        </div>
+                    </div>
+                    <div class="notifications-modal-footer">
+                        <button type="button" class="notifications-btn notifications-btn-outline" onclick="toggleNotificationModal('modal-create-notification')">Hủy</button>
+                        <button type="submit" class="notifications-btn notifications-btn-primary"><i class="ph ph-paper-plane-tilt"></i> Phát Hành Thông Báo</button>
+                    </div>
+                </form>
             </div>
         </div>
     </main>

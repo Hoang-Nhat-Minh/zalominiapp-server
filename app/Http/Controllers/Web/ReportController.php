@@ -74,6 +74,32 @@ class ReportController extends Controller
         ));
     }
 
+    public function show($id)
+    {
+        $report = Report::with('user')->findOrFail($id);
+
+        $statusConfigs = [
+            'pending' => [
+                'class' => 'reports-badge-pending',
+                'label' => 'Chờ tiếp nhận',
+            ],
+            'processing' => [
+                'class' => 'reports-badge-processing',
+                'label' => 'Đang xử lý',
+            ],
+            'resolved' => [
+                'class' => 'reports-badge-resolved',
+                'label' => 'Đã xử lý',
+            ],
+            'rejected' => [
+                'class' => 'reports-badge-rejected',
+                'label' => 'Từ chối',
+            ],
+        ];
+
+        return view('frontend.reports.show', compact('report', 'statusConfigs'));
+    }
+
     public function updateStatus(Request $request, $id)
     {
         $report = Report::findOrFail($id);

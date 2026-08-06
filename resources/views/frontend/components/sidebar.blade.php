@@ -79,6 +79,14 @@
         </a>
     </div>
 
+    <div class="admin-nav-group">
+        <span class="admin-nav-title">Cấu Hình Hệ Thống</span>
+        <a href="{{ route('settings.index') }}" class="admin-nav-item {{ Route::is('settings.*')?'admin-active':'' }}">
+            <i class="ph ph-gear"></i>
+            <span class="admin-nav-text">Cấu hình hệ thống</span>
+        </a>
+    </div>
+
     @if(auth()->check() && auth()->user()->role === 'admin')
         <div class="admin-nav-group">
             <span class="admin-nav-title">Quản Trị Hệ Thống</span>

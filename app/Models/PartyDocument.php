@@ -43,7 +43,16 @@ class PartyDocument extends Model
         'status_config',
         'file_info',
         'file_icon',
+        'file_url',
     ];
+
+    public function getFileUrlAttribute(): ?string
+    {
+        if (!$this->file_path) {
+            return null;
+        }
+        return asset('storage/' . $this->file_path);
+    }
 
     public function getCategoryConfigAttribute(): array
     {

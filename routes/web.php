@@ -15,6 +15,7 @@ use App\Http\Controllers\Web\WeatherAlertController;
 use App\Http\Controllers\Web\SurveyController;
 use App\Http\Controllers\Web\NewsCategoryController;
 use App\Http\Controllers\Web\NewsController;
+use App\Http\Controllers\Web\SettingController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -52,9 +53,16 @@ Route::middleware('auth:officer')->group(function () {
     Route::get('/profiles/export',  [ProfileController::class,    'export'])->name('profiles.export');
     Route::get('/reports',          [ReportController::class,     'index'])->name('reports');
     Route::get('/reports/export',   [ReportController::class,     'export'])->name('reports.export');
+    Route::get('/reports/{id}',     [ReportController::class,     'show'])->name('reports.show');
     Route::put('/reports/{id}/status', [ReportController::class,  'updateStatus'])->name('reports.updateStatus');
-    Route::get('/notifications',    [NotificationController::class,'index'])->name('notifications');
-    Route::get('/documents',        [DocumentController::class,   'index'])->name('documents');
+    Route::get('/notifications',           [NotificationController::class,'index'])->name('notifications');
+    Route::post('/notifications',          [NotificationController::class,'store'])->name('notifications.store');
+    Route::delete('/notifications/{id}',   [NotificationController::class,'destroy'])->name('notifications.destroy');
+    Route::get('/documents',               [DocumentController::class,   'index'])->name('documents');
+    Route::post('/documents',              [DocumentController::class,   'store'])->name('documents.store');
+    Route::patch('/documents/{id}/status', [DocumentController::class,   'updateStatus'])->name('documents.updateStatus');
+    Route::get('/documents/{id}/download', [DocumentController::class,   'download'])->name('documents.download');
+    Route::delete('/documents/{id}',       [DocumentController::class,   'destroy'])->name('documents.destroy');
     Route::get('/citizens',         [CitizenController::class,    'index'])->name('citizens');
     Route::get('/citizens/export',  [CitizenController::class,    'export'])->name('citizens.export');
     Route::get('/digitalmaps',      [DigitalmapController::class, 'index'])->name('digitalmaps');
@@ -64,4 +72,6 @@ Route::middleware('auth:officer')->group(function () {
     Route::resource('surveys', SurveyController::class);
     Route::resource('news-categories', NewsCategoryController::class);
     Route::resource('news', NewsController::class);
+    Route::get('/settings',  [SettingController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
 });

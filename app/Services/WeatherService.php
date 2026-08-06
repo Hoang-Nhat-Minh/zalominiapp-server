@@ -6,26 +6,33 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
+use App\Models\Setting;
+
 class WeatherService
 {
-    public function getWeather($lat = '21.0285', $lng = '105.8542'): array
+    public function getWeather($lat = null, $lng = null): array
     {
-        $lat = $lat ?: '21.0285';
-        $lng = $lng ?: '105.8542';
+        // Luôn sử dụng tọa độ cấu hình trên server database
+        $lat = Setting::get('weather_lat', '21.0285');
+        $lng = Setting::get('weather_lng', '105.8542');
+        $city = Setting::get('weather_city', 'Hà Nội');
 
         $cacheKey = "weather_forecast_{$lat}_{$lng}";
 
-        $forecast = Cache::remember($cacheKey, 1800, function () use ($lat, $lng) {
+        // Tăng thời gian Cache lên 1 tiếng (3600 giây)
+        $forecast = Cache::remember($cacheKey, 3600, function () use ($lat, $lng) {
             return $this->fetchOpenMeteoWeather($lat, $lng);
         });
 
-        // Nếu dữ liệu trả về null, xóa cache ngay để không bị kẹt cache null trong 30 phút
+        // Nếu dữ liệu trả về null, xóa cache ngay để không bị kẹt cache null
         if (is_null($forecast['current'] ?? null)) {
             Log::warning('[WeatherService] Weather forecast "current" is NULL. Clearing cache so next request retries API.', [
                 'cacheKey' => $cacheKey,
             ]);
             Cache::forget($cacheKey);
         }
+
+        $forecast['location'] = $city;
 
         return $forecast;
     }

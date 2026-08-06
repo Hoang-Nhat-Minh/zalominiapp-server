@@ -134,7 +134,10 @@
                             <span class="reports-badge {{ $statusConfig['class'] }}">{{ $statusConfig['label'] }}</span>
                         </td>
                         <td class="reports-text-center">
-                            <button class="reports-btn-icon reports-color-primary" title="Xem chi tiết & Xử lý" onclick="toggleReportModal('modal-report-{{ $report->id }}')">
+                            <a href="{{ route('reports.show', $report->id) }}" class="reports-btn-icon" title="Xem trang chi tiết" style="color: #4B5563; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
+                                <i class="ph ph-eye"></i>
+                            </a>
+                            <button class="reports-btn-icon reports-color-primary" title="Xử lý nhanh" onclick="toggleReportModal('modal-report-{{ $report->id }}')">
                                 <i class="ph ph-note-pencil"></i>
                             </button>
                         </td>

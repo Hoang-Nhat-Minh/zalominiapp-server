@@ -21,10 +21,7 @@ class WeatherController extends Controller
     public function index(Request $request)
     {
         try {
-            $lat = $request->input('lat', '21.0285');
-            $lng = $request->input('lng', '105.8542');
-
-            $forecast = $this->weatherService->getWeather($lat, $lng);
+            $forecast = $this->weatherService->getWeather();
 
             $alerts = [];
             if (Schema::hasTable('weather_alerts')) {
@@ -37,10 +34,11 @@ class WeatherController extends Controller
                 'success' => true,
                 'message' => 'Dữ liệu dự báo thời tiết & cảnh báo cực đoan',
                 'data' => [
-                    'current' => $forecast['current'] ?? null,
-                    'hourly'  => $forecast['hourly'] ?? [],
-                    'daily'   => $forecast['daily'] ?? [],
-                    'alerts'  => $alerts,
+                    'location' => $forecast['location'] ?? null,
+                    'current'  => $forecast['current'] ?? null,
+                    'hourly'   => $forecast['hourly'] ?? [],
+                    'daily'    => $forecast['daily'] ?? [],
+                    'alerts'   => $alerts,
                 ]
             ]);
         } catch (\Exception $e) {

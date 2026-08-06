@@ -13,6 +13,15 @@
 
     <title>@yield('title', 'Dịch Vụ Số')</title>
 
+    @php
+        $customFavicon = \App\Models\Setting::get('favicon');
+    @endphp
+    @if($customFavicon)
+        <link rel="icon" href="{{ asset('storage/' . $customFavicon) }}">
+    @else
+        <link rel="icon" href="{{ asset('favicon.ico') }}">
+    @endif
+
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
