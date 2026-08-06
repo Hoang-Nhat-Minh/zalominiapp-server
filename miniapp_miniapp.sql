@@ -182,8 +182,8 @@ CREATE TABLE `officers` (
   `phone` varchar(255) NOT NULL,
   `status` varchar(255) NOT NULL,
   `last_login_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -191,7 +191,7 @@ CREATE TABLE `officers` (
 --
 
 INSERT INTO `officers` (`id`, `name`, `email`, `password`, `department_id`, `phone`, `status`, `last_login_at`, `created_at`, `updated_at`) VALUES
-(1, 'Hoang Nhat Minh', 'admin@admin.com', '$2y$10$w9mEXJb36kIIIMZu.eYwIu7gbWkp4qOMnzDl9f9WQaKL6Leu1AhRq', 1, '0987654321', 'active', '2026-07-14 03:35:18', '0000-00-00 00:00:00', '2026-07-14 03:35:18');
+(1, 'Hoang Nhat Minh', 'admin@admin.com', '$2y$10$w9mEXJb36kIIIMZu.eYwIu7gbWkp4qOMnzDl9f9WQaKL6Leu1AhRq', 1, '0987654321', 'active', '2026-07-14 03:35:18', '2026-07-14 03:35:18', '2026-07-14 03:35:18');
 
 -- --------------------------------------------------------
 
@@ -728,9 +728,19 @@ ALTER TABLE `users`
 --
 -- Constraints for table `notification_user`
 --
-ALTER TABLE `notification_user`
-  ADD CONSTRAINT `notification_user_notification_id_foreign` FOREIGN KEY (`notification_id`) REFERENCES `notifications` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `notification_user_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+--
+-- Table structure for table `settings`
+--
+CREATE TABLE IF NOT EXISTS `settings` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `value` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `settings_key_unique` (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
